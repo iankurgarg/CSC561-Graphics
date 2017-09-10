@@ -334,8 +334,8 @@ function drawInputEllipsoidsUsingArcs(context) {
 } // end draw input ellipsoids
 
 function findIntersectionWithEllipse(E, D, ellipse, screenT) {
-    A = new Vector(ellipse.a, ellipse.b, ellipse.c)
-    C = new Vector(ellipse.x, ellipse.y, ellipse.z)
+    A = new Vector(ellipse.a, ellipse.b, ellipse.c);
+    C = new Vector(ellipse.x, ellipse.y, ellipse.z);
 
     /*
     Equation of the Ellipse is:
@@ -353,125 +353,125 @@ function findIntersectionWithEllipse(E, D, ellipse, screenT) {
     */
 
 
-    ta = Vector.divide(D, A)
-    tb = Vector.divide(Vector.subtract(E, C), A)
-    a = Vector.dot(ta,ta)
-    b = 2*Vector.dot(ta, tb)
-    c = Vector.dot(tb, tb) - 1
+    ta = Vector.divide(D, A);
+    tb = Vector.divide(Vector.subtract(E, C), A);
+    a = Vector.dot(ta,ta);
+    b = 2*Vector.dot(ta, tb);
+    c = Vector.dot(tb, tb) - 1;
 
-    quadD = (b*b) - (4*a*c)
+    quadD = (b*b) - (4*a*c);
     // console.log("b*b = ", (b*b))
     // console.log('quadD = ', quadD)
 
     if (quadD >= 0) {
-        t1 = (-b - Math.sqrt(quadD))/(2*a)
-        t2 = (-b + Math.sqrt(quadD))/(2*a)
+        var t1 = (-b - Math.sqrt(quadD))/(2*a);
+        var t2 = (-b + Math.sqrt(quadD))/(2*a);
 
         if (t1 > screenT && t2 > screenT) {
             if (t1 < t2) {
-                return t1
+                return t1;
             }
             else {
-                return t2
+                return t2;
             }
         }
         else if (t1 < screenT && t2 > screenT) {
-            return t2
+            return t2;
         }
         else if (t2 < screenT && t1 > screenT) {
-            return t1
+            return t1;
         }
         else {
-            return null
+            return null;
         }
     }
     else {
-        return null
+        return null;
     }
 }
 
 
 function raycasting(context) {
     var inputEllipsoids = getInputEllipsoids();
-    var n = inputEllipsoids.length
+    var n = inputEllipsoids.length;
 
     var w = context.canvas.width; // as set in html
     var h = context.canvas.height;  // as set in html
     var imagedata = context.createImageData(w,h);
 
-    var eye = new Vector(0.5, 0.5, -0.5)
-    var viewUp = new Vector(0,1,0)
-    var lookAt = new Vector(0,0,1)
-    var distanceFromEye = 0.5
-    var realW = 1
-    var realH = 1
+    var eye = new Vector(0.5, 0.5, -0.5);
+    var viewUp = new Vector(0,1,0);
+    var lookAt = new Vector(0,0,1);
+    var distanceFromEye = 0.5;
+    var realW = 1;
+    var realH = 1;
 
     var ul = new Vector(0, 1, 0)
-    var ur = new Vector(1, 1, 0)
-    var ll = new Vector(0, 0, 0)
-    var lr = new Vector(1, 0, 0)
+    var ur = new Vector(1, 1, 0);
+    var ll = new Vector(0, 0, 0);
+    var lr = new Vector(1, 0, 0);
 
-    var PA = ul.y*(ur.z - lr.z) + ur.y*(lr.z - ul.z) + lr.y*(ul.z - ur.z)
-    var PB = ul.z*(ur.x - lr.x) + ur.z*(lr.x - ul.x) + lr.z*(ul.x - ur.x)
-    var PC = ul.x*(ur.y - lr.y) + ur.x*(lr.y - ul.y) + lr.x*(ul.y - ur.y)    
-    var PD = (-ul.x*((ur.y*lr.z) - (lr.y*ur.z))) + (-ur.x*((lr.y*ul.z) - (ul.y*lr.z))) + (-lr.x*((ul.y*ur.z) - (ur.y*ul.z)))
+    var PA = ul.y*(ur.z - lr.z) + ur.y*(lr.z - ul.z) + lr.y*(ul.z - ur.z);
+    var PB = ul.z*(ur.x - lr.x) + ur.z*(lr.x - ul.x) + lr.z*(ul.x - ur.x);
+    var PC = ul.x*(ur.y - lr.y) + ur.x*(lr.y - ul.y) + lr.x*(ul.y - ur.y);
+    var PD = (-ul.x*((ur.y*lr.z) - (lr.y*ur.z))) + (-ur.x*((lr.y*ul.z) - (ul.y*lr.z))) + (-lr.x*((ul.y*ur.z) - (ur.y*ul.z)));
 
     for (var i = 0; i < w; i++) {
         for (var j = 0; j < h; j++) {
-            realX = (i/w)*(ur.x - ul.x) + ul.x
-            realY = (j/h)*(ll.y - ul.y) + ul.y
-            realZ = 0
+            realX = (i/w)*(ur.x - ul.x) + ul.x;
+            realY = (j/h)*(ll.y - ul.y) + ul.y;
+            realZ = 0;
 
-            realPoint = new Vector(realX, realY, realZ)
+            realPoint = new Vector(realX, realY, realZ);
             // console.log(realPoint)
 
-            rayDir = Vector.subtract(realPoint, eye)
+            rayDir = Vector.subtract(realPoint, eye);
             // console.log(rayDir)
 
-            screenT = (-((PA*eye.x) + (PB*eye.y) + (PC*eye.z) + PD))/((PA*rayDir.x) + (PB*rayDir.y) + (PC*rayDir.z))
+            screenT = (-((PA*eye.x) + (PB*eye.y) + (PC*eye.z) + PD))/((PA*rayDir.x) + (PB*rayDir.y) + (PC*rayDir.z));
 
-            realIntersect = null
-            realEllipse = 0
+            realIntersect = null;
+            realEllipse = 0;
             for (var e = 0; e < n; e++) {
-                te = findIntersectionWithEllipse(eye, rayDir, inputEllipsoids[e], screenT)
+                te = findIntersectionWithEllipse(eye, rayDir, inputEllipsoids[e], screenT);
                 // console.log("te = ", te)
                 if (te != null) {
                     if (realIntersect != null) {
                         if (realIntersect > te) {
-                            realIntersect = te
-                            realEllipse = e
+                            realIntersect = te;
+                            realEllipse = e;
                         }
                     }
                     else {
-                        realIntersect = te
-                        realEllipse = e
+                        realIntersect = te;
+                        realEllipse = e;
                     }
                 }
             }
-            col = null
+            col = null;
             if (realIntersect != null) {
-                p = Vector.add(eye, Vector.scale(realIntersect, rayDir))
-                r = inputEllipsoids[realEllipse].diffuse[0]
-                g = inputEllipsoids[realEllipse].diffuse[1]
-                b = inputEllipsoids[realEllipse].diffuse[2]
+                p = Vector.add(eye, Vector.scale(realIntersect, rayDir));
+                r = inputEllipsoids[realEllipse].diffuse[0];
+                g = inputEllipsoids[realEllipse].diffuse[1];
+                b = inputEllipsoids[realEllipse].diffuse[2];
 
-                r = Math.round(r*255)
-                g = Math.round(g*255)
-                b = Math.round(b*255)
+                r = Math.round(r*255);
+                g = Math.round(g*255);
+                b = Math.round(b*255);
 
-                col = new Color(r,g,b, 255)
+                col = new Color(r,g,b, 255);
 
                 // This is the nearest point of intersection in all ellipses. Display it as you like
             }
             else {
                 // This Ray does not intersect any ellipses. Display Default Color.
-                col = new Color(0 ,0, 0, 0)
+                col = new Color(0 ,0, 0, 0);
 
             }
             // console.log("i = " + i + " j = " + j)
             // console.log("col = " + col.r + " " + col.g + " " + col.b)
             
-            drawPixel(imagedata, i, j, col)
+            drawPixel(imagedata, i, j, col);
         }
     }
     context.putImageData(imagedata, 0, 0);

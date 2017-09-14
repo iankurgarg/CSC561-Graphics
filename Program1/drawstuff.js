@@ -472,6 +472,7 @@ function raycasting(context) {
                 //Color = La*Ka + Ld*Kd*(N.L) + Ls*Ks*(N.H)^n
                 var P = Vector.add(eye, Vector.scale(realIntersect, rayDir));
                 var ellipse = inputEllipsoids[realEllipse];
+                
                 // Ambient
                 var r1 = ellipse.ambient[0]*lightColor.r;
                 var g1 = ellipse.ambient[1]*lightColor.g;
@@ -482,14 +483,13 @@ function raycasting(context) {
                 var C = new Vector(ellipse.x, ellipse.y, ellipse.z);
                 var A = new Vector(ellipse.a, ellipse.b, ellipse.c);
                 A = Vector.multiply(A, A);
-                A = Vector.scale(0.5, A);
+                //A = Vector.scale(0.5, A);
                 var N = Vector.divide(Vector.subtract(P, C), A);
                 N = Vector.normalize(N);
 
                 var L = Vector.normalize(Vector.subtract(lightPos, P));
 
                 var ndotl = Vector.dot(N, L);
-
 
                 var r2 = lightColor.r*ellipse.diffuse[0]*ndotl;
                 var g2 = lightColor.g*ellipse.diffuse[1]*ndotl;
@@ -537,6 +537,18 @@ function raycasting(context) {
     }
     context.putImageData(imagedata, 0, 0);
 
+}
+
+// Extra Credit: Changeable Height and Width of the canvas
+function changeHeight() {
+    var width = document.getElementById('width').value;
+    var height = document.getElementById('height').value;
+
+    var canvas = document.getElementById('viewport');
+    canvas.setAttribute('height', height);
+    canvas.setAttribute('width', width);
+
+    main();
 }
 
 

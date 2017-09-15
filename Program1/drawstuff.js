@@ -351,9 +351,21 @@ function drawInputEllipsoidsUsingArcs(context) {
 } // end draw input ellipsoids
 
 
+// These Variables are udpated through the interface
 var eye = new Vector(0.5, 0.5, -0.5);
 var viewUp = new Vector(0,1,0);
 var lookAt = new Vector(0,0,1);
+
+// These are unchanged. If needed change here in code manually.
+var distanceFromEye = 0.5;
+var realW = 1.0;
+var realH = 1.0;
+
+// These are calculated and updated everytime above variables are changed
+var ul = new Vector(0, 1, 0)
+var ur = new Vector(1, 1, 0);
+var ll = new Vector(0, 0, 0);
+var lr = new Vector(1, 0, 0);
 
 function findIntersectionWithEllipse(E, D, ellipse, screenT) {
     A = new Vector(ellipse.a, ellipse.b, ellipse.c);
@@ -412,6 +424,36 @@ function findIntersectionWithEllipse(E, D, ellipse, screenT) {
     }
 }
 
+function calculateCoords() {
+    var lookAtDir = Vector.normalize(lookAt);
+    var center = Vector.add(eye, Vector.scale(distanceFromEye, lookAtDir));
+
+    var leftDir = new Vector();
+    leftDir.x = (lookAt.y*viewUp.z) - (lookAt.z*viewUp.y);
+    leftDir.y = (lookAt.z*viewUp.x) - (lookAt.x*viewUp.z);
+    leftDir.z = (lookAt.x*viewUp.y) - (lookAt.y*viewUp.x);
+
+    // lookAtDir.toConsole("lookAtDir");
+
+    var leftDir = Vector.normalize(leftDir);
+    var viewUpDir = Vector.normalize(viewUp);
+    // viewUpDir.toConsole("viewUpDir");
+    // leftDir.toConsole("leftDir");
+
+    u_mid = Vector.add(center, Vector.scale(realH/2, viewUpDir));
+    l_mid = Vector.add(center, Vector.scale(-realH/2, viewUpDir));
+
+    ul = Vector.add(u_mid, Vector.scale(realW/2, leftDir));
+    ur = Vector.add(u_mid, Vector.scale(-realW/2, leftDir));
+    ll = Vector.add(l_mid, Vector.scale(realW/2, leftDir));
+    lr = Vector.add(l_mid, Vector.scale(-realW/2, leftDir));
+
+    ul.toConsole("ul");
+    ur.toConsole("ur");
+    ll.toConsole("ll");
+    lr.toConsole("lr");
+
+}
 
 
 function raycasting(context) {
@@ -422,30 +464,35 @@ function raycasting(context) {
     var h = context.canvas.height;  // as set in html
     var imagedata = context.createImageData(w,h);
 
-    var distanceFromEye = 0.5;
-    var realW = 1;
-    var realH = 1;
+    calculateCoords();
     var lightPos = new Vector(-1,3,-0.5);
     var lightColor = new Color(1,1,1);
-
-    var ul = new Vector(0, 1, 0)
-    var ur = new Vector(1, 1, 0);
-    var ll = new Vector(0, 0, 0);
-    var lr = new Vector(1, 0, 0);
 
     var PA = ul.y*(ur.z - lr.z) + ur.y*(lr.z - ul.z) + lr.y*(ul.z - ur.z);
     var PB = ul.z*(ur.x - lr.x) + ur.z*(lr.x - ul.x) + lr.z*(ul.x - ur.x);
     var PC = ul.x*(ur.y - lr.y) + ur.x*(lr.y - ul.y) + lr.x*(ul.y - ur.y);
     var PD = (-ul.x*((ur.y*lr.z) - (lr.y*ur.z))) + (-ur.x*((lr.y*ul.z) - (ul.y*lr.z))) + (-lr.x*((ul.y*ur.z) - (ur.y*ul.z)));
 
+    var realRightDir = Vector.subtract(ur, ul);
+    realRightDir = Vector.normalize(realRightDir);
+    var realDownDir = Vector.subtract(ll, ul);
+    realDownDir = Vector.normalize(realDownDir);
+    
     for (var i = 0; i < w; i++) {
         for (var j = 0; j < h; j++) {
-            var realX = (i/w)*(ur.x - ul.x) + ul.x;
-            var realY = (j/h)*(ll.y - ul.y) + ul.y;
-            var realZ = 0;
 
-            var realPoint = new Vector(realX, realY, realZ);
-            // console.log(realPoint)
+            var deltaX = Vector.scale((i/w), realRightDir);
+            var deltaY = Vector.scale((j/h), realDownDir);
+
+            var realPoint = Vector.add(ul, deltaX);
+            realPoint = Vector.add(realPoint, deltaY);
+
+            // var realX = (i/w)*(ur.x - ul.x) + ul.x;
+            // var realY = (j/h)*(ll.y - ul.y) + ul.y;
+            // var realZ = 0;
+
+            // var realPoint = new Vector(realX, realY, realZ);
+            // realPoint.toConsole("realPoint");
 
             var rayDir = Vector.subtract(realPoint, eye);
             // console.log(rayDir)
@@ -544,19 +591,38 @@ function raycasting(context) {
 
 // Extra Credit: Changeable Height and Width of the canvas
 function updateParams() {
+    // Update Canvas Height and Width
     var width = document.getElementById('width').value;
     var height = document.getElementById('height').value;
 
+    var canvas = document.getElementById('viewport');
+    canvas.setAttribute('height', height);
+    canvas.setAttribute('width', width);
+
+    // Update Eye Position
     var eyex = document.getElementById('eyex').value;
     var eyey = document.getElementById('eyey').value;
     var eyez = document.getElementById('eyez').value;
 
     eye = new Vector(parseFloat(eyex), parseFloat(eyey), parseFloat(eyez));
 
-    var canvas = document.getElementById('viewport');
-    canvas.setAttribute('height', height);
-    canvas.setAttribute('width', width);
+    // Update look At vector
+    var lookatx = document.getElementById('lookatx').value;
+    var lookaty = document.getElementById('lookaty').value;
+    var lookatz = document.getElementById('lookatz').value;
 
+    lookAt = new Vector(parseFloat(lookatx), parseFloat(lookaty), parseFloat(lookatz));
+    lookAt = Vector.normalize(lookAt);
+
+    // Update view Up Vector
+    var lookupx = document.getElementById('lookupx').value;
+    var lookupy = document.getElementById('lookupy').value;
+    var lookupz = document.getElementById('lookupz').value;
+
+    viewUp = new Vector(parseFloat(lookupx), parseFloat(lookupy), parseFloat(lookupz));
+    viewUp = Vector.normalize(viewUp);
+
+    // Re-render the view
     main();
 }
 

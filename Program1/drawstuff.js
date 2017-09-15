@@ -350,6 +350,11 @@ function drawInputEllipsoidsUsingArcs(context) {
     } // end if ellipsoids found
 } // end draw input ellipsoids
 
+
+var eye = new Vector(0.5, 0.5, -0.5);
+var viewUp = new Vector(0,1,0);
+var lookAt = new Vector(0,0,1);
+
 function findIntersectionWithEllipse(E, D, ellipse, screenT) {
     A = new Vector(ellipse.a, ellipse.b, ellipse.c);
     C = new Vector(ellipse.x, ellipse.y, ellipse.z);
@@ -408,6 +413,7 @@ function findIntersectionWithEllipse(E, D, ellipse, screenT) {
 }
 
 
+
 function raycasting(context) {
     var inputEllipsoids = getInputEllipsoids();
     var n = inputEllipsoids.length;
@@ -416,9 +422,6 @@ function raycasting(context) {
     var h = context.canvas.height;  // as set in html
     var imagedata = context.createImageData(w,h);
 
-    var eye = new Vector(0.5, 0.5, -0.5);
-    var viewUp = new Vector(0,1,0);
-    var lookAt = new Vector(0,0,1);
     var distanceFromEye = 0.5;
     var realW = 1;
     var realH = 1;
@@ -540,9 +543,15 @@ function raycasting(context) {
 }
 
 // Extra Credit: Changeable Height and Width of the canvas
-function changeHeight() {
+function updateParams() {
     var width = document.getElementById('width').value;
     var height = document.getElementById('height').value;
+
+    var eyex = document.getElementById('eyex').value;
+    var eyey = document.getElementById('eyey').value;
+    var eyez = document.getElementById('eyez').value;
+
+    eye = new Vector(parseFloat(eyex), parseFloat(eyey), parseFloat(eyez));
 
     var canvas = document.getElementById('viewport');
     canvas.setAttribute('height', height);

@@ -243,9 +243,8 @@ function drawRandPixels(context) {
 } // end draw random pixels
 
 // get the input ellipsoids from the standard class URL
-function getInputEllipsoids() {
-    const INPUT_ELLIPSOIDS_URL = 
-        "https://ncsucgclass.github.io/prog1/ellipsoids.json";
+function getInputEllipsoids(INPUT_ELLIPSOIDS_URL) {
+    //const INPUT_ELLIPSOIDS_URL = "https://ncsucgclass.github.io/prog1/ellipsoids.json";
         
     // load the ellipsoids file
     var httpReq = new XMLHttpRequest(); // a new http request
@@ -424,6 +423,80 @@ function findIntersectionWithEllipse(E, D, ellipse, screenT) {
     }
 }
 
+function calculateColor(P, ellipse) {
+    // var lights = getInputEllipsoids("https://raw.githubusercontent.com/NCSUCGClass/prog1/gh-pages/lights.json");
+    var lights = [{"x": -1, "y": 3, "z": -0.5, "ambient": [1,1,1], "diffuse": [1,1,1], "specular": [1,1,1]}] 
+        //{"x": 1, "y": -3, "z": -0.5, "ambient": [1,1,1], "diffuse": [1,1,1], "specular": [1,1,1]}]
+    
+    //Color = La*Ka + Ld*Kd*(N.L) + Ls*Ks*(N.H)^n
+    
+    // var lightPos = new Vector(-1,3,-0.5);
+    // var lightColor = new Color(1,1,1);
+    var r = 0;
+    var g = 0;
+    var b = 0;
+    for (var l=0; l < lights.length; l++){
+        var light = lights[l];
+        var lightPos = new Vector(light.x, light.y, light.z);
+        var lightColorA = new Color(light.ambient[0], light.ambient[1], light.ambient[2]);
+        var lightColorD = new Color(light.diffuse[0], light.diffuse[1], light.diffuse[2]);
+        var lightColorS = new Color(light.specular[0], light.specular[1], light.specular[2]);
+
+        // Ambient
+        var r1 = ellipse.ambient[0]*lightColorA.r;
+        var g1 = ellipse.ambient[1]*lightColorA.g;
+        var b1 = ellipse.ambient[2]*lightColorA.b;
+
+
+        //diffuse
+        var C = new Vector(ellipse.x, ellipse.y, ellipse.z);
+        var A = new Vector(ellipse.a, ellipse.b, ellipse.c);
+        A = Vector.multiply(A, A);
+        //A = Vector.scale(0.5, A);
+        var N = Vector.divide(Vector.subtract(P, C), A);
+        N = Vector.normalize(N);
+
+        var L = Vector.normalize(Vector.subtract(lightPos, P));
+
+        var ndotl = Vector.dot(N, L);
+
+        var r2 = lightColorD.r*ellipse.diffuse[0]*ndotl;
+        var g2 = lightColorD.g*ellipse.diffuse[1]*ndotl;
+        var b2 = lightColorD.b*ellipse.diffuse[2]*ndotl;
+
+        //specular
+        var V = Vector.normalize(Vector.subtract(eye, P));
+        var H = Vector.normalize(Vector.add(L, V));
+        var ndothn = Math.pow(Vector.dot(N, H), ellipse.n);
+
+        var r3 = lightColorS.r*ellipse.specular[0]*ndothn;
+        var g3 = lightColorS.g*ellipse.specular[1]*ndothn;
+        var b3 = lightColorS.b*ellipse.specular[2]*ndothn;
+
+        // Add'em all up
+        r += (r1 + r2 + r3);
+        g += (g1 + g2 + g3);
+        b += (b1 + b2 + b3);
+    }
+    
+    // Round up and get them in limits
+    r = Math.round((r)*255);
+    g = Math.round((g)*255);
+    b = Math.round((b)*255);
+
+    r = Math.min(r, 255)
+    g = Math.min(g, 255)
+    b = Math.min(b, 255)
+
+    r = Math.max(r, 0)
+    g = Math.max(g, 0)
+    b = Math.max(b, 0)
+
+
+    var col = new Color(r,g,b, 255);
+    return col;
+}
+
 function calculateCoords() {
     var lookAtDir = Vector.normalize(lookAt);
     var center = Vector.add(eye, Vector.scale(distanceFromEye, lookAtDir));
@@ -448,16 +521,16 @@ function calculateCoords() {
     ll = Vector.add(l_mid, Vector.scale(realW/2, leftDir));
     lr = Vector.add(l_mid, Vector.scale(-realW/2, leftDir));
 
-    ul.toConsole("ul");
-    ur.toConsole("ur");
-    ll.toConsole("ll");
-    lr.toConsole("lr");
+    // ul.toConsole("ul");
+    // ur.toConsole("ur");
+    // ll.toConsole("ll");
+    // lr.toConsole("lr");
 
 }
 
 
 function raycasting(context) {
-    var inputEllipsoids = getInputEllipsoids();
+    var inputEllipsoids = getInputEllipsoids("https://ncsucgclass.github.io/prog1/ellipsoids.json");
     var n = inputEllipsoids.length;
 
     var w = context.canvas.width; // as set in html
@@ -465,8 +538,7 @@ function raycasting(context) {
     var imagedata = context.createImageData(w,h);
 
     calculateCoords();
-    var lightPos = new Vector(-1,3,-0.5);
-    var lightColor = new Color(1,1,1);
+
 
     var PA = ul.y*(ur.z - lr.z) + ur.y*(lr.z - ul.z) + lr.y*(ul.z - ur.z);
     var PB = ul.z*(ur.x - lr.x) + ur.z*(lr.x - ul.x) + lr.z*(ul.x - ur.x);
@@ -477,7 +549,7 @@ function raycasting(context) {
     realRightDir = Vector.normalize(realRightDir);
     var realDownDir = Vector.subtract(ll, ul);
     realDownDir = Vector.normalize(realDownDir);
-    
+
     for (var i = 0; i < w; i++) {
         for (var j = 0; j < h; j++) {
 
@@ -519,58 +591,10 @@ function raycasting(context) {
             }
             var col = null;
             if (realIntersect != null) {
-                //Color = La*Ka + Ld*Kd*(N.L) + Ls*Ks*(N.H)^n
                 var P = Vector.add(eye, Vector.scale(realIntersect, rayDir));
                 var ellipse = inputEllipsoids[realEllipse];
-                
-                // Ambient
-                var r1 = ellipse.ambient[0]*lightColor.r;
-                var g1 = ellipse.ambient[1]*lightColor.g;
-                var b1 = ellipse.ambient[2]*lightColor.b;
 
-
-                //diffuse
-                var C = new Vector(ellipse.x, ellipse.y, ellipse.z);
-                var A = new Vector(ellipse.a, ellipse.b, ellipse.c);
-                A = Vector.multiply(A, A);
-                //A = Vector.scale(0.5, A);
-                var N = Vector.divide(Vector.subtract(P, C), A);
-                N = Vector.normalize(N);
-
-                var L = Vector.normalize(Vector.subtract(lightPos, P));
-
-                var ndotl = Vector.dot(N, L);
-
-                var r2 = lightColor.r*ellipse.diffuse[0]*ndotl;
-                var g2 = lightColor.g*ellipse.diffuse[1]*ndotl;
-                var b2 = lightColor.b*ellipse.diffuse[2]*ndotl;
-
-                //specular
-                var V = Vector.normalize(Vector.subtract(eye, P));
-                var H = Vector.normalize(Vector.add(L, V));
-                var ndothn = Math.pow(Vector.dot(N, H), ellipse.n);
-
-                var r3 = lightColor.r*ellipse.specular[0]*ndothn;
-                var g3 = lightColor.g*ellipse.specular[1]*ndothn;
-                var b3 = lightColor.b*ellipse.specular[2]*ndothn;
-
-
-                // Add'em all up
-
-                var r = Math.round((r1+r2+r3)*255);
-                var g = Math.round((g1+g2+g3)*255);
-                var b = Math.round((b1+b2+b3)*255);
-
-                r = Math.min(r, 255)
-                g = Math.min(g, 255)
-                b = Math.min(b, 255)
-
-                r = Math.max(r, 0)
-                g = Math.max(g, 0)
-                b = Math.max(b, 0)
-
-
-                col = new Color(r,g,b, 255);
+                col = calculateColor(P, ellipse);
 
                 // This is the nearest point of intersection in all ellipses. Display it as you like                
             }

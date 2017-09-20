@@ -424,17 +424,17 @@ function findIntersectionWithEllipse(E, D, ellipse, screenT) {
 }
 
 function calculateColor(P, ellipse) {
-    // var lights = getInputEllipsoids("https://raw.githubusercontent.com/NCSUCGClass/prog1/gh-pages/lights.json");
-    var lights = [{"x": -1, "y": 3, "z": -0.5, "ambient": [1,1,1], "diffuse": [1,1,1], "specular": [1,1,1]}] 
+    var lights = getInputEllipsoids("https://raw.githubusercontent.com/NCSUCGClass/prog1/gh-pages/lights.json");
+    //var lights = [{"x": -1, "y": 3, "z": -0.5, "ambient": [1,1,1], "diffuse": [1,1,1], "specular": [1,1,1]}] 
         //{"x": 1, "y": -3, "z": -0.5, "ambient": [1,1,1], "diffuse": [1,1,1], "specular": [1,1,1]}]
     
     //Color = La*Ka + Ld*Kd*(N.L) + Ls*Ks*(N.H)^n
     
     // var lightPos = new Vector(-1,3,-0.5);
     // var lightColor = new Color(1,1,1);
-    var r = 0;
-    var g = 0;
-    var b = 0;
+    var r = 0.0;
+    var g = 0.0;
+    var b = 0.0;
     for (var l=0; l < lights.length; l++){
         var light = lights[l];
         var lightPos = new Vector(light.x, light.y, light.z);

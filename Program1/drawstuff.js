@@ -500,12 +500,9 @@ function checkShadows(P, light, ei) {
 function calculateColor(P, ei, lights) {
     var ellipse = inputEllipsoids[ei];
     //var lights = [{"x": -1.0, "y": 3.0, "z": -0.5, "ambient": [1,1,1], "diffuse": [1,1,1], "specular": [1,1,1]}] 
-        //{"x": 1, "y": -3, "z": -0.5, "ambient": [1,1,1], "diffuse": [1,1,1], "specular": [1,1,1]}]
     
     //Color = La*Ka + Ld*Kd*(N.L) + Ls*Ks*(N.H)^n
     
-    // var lightPos = new Vector(-1,3,-0.5);
-    // var lightColor = new Color(1,1,1);
     var r = 0.0;
     var g = 0.0;
     var b = 0.0;
@@ -568,12 +565,8 @@ function calculateCoords() {
     leftDir.y = (lookAt.z*viewUp.x) - (lookAt.x*viewUp.z);
     leftDir.z = (lookAt.x*viewUp.y) - (lookAt.y*viewUp.x);
 
-    // lookAtDir.toConsole("lookAtDir");
-
     var leftDir = Vector.normalize(leftDir);
     var viewUpDir = Vector.normalize(viewUp);
-    // viewUpDir.toConsole("viewUpDir");
-    // leftDir.toConsole("leftDir");
 
     u_mid = Vector.add(center, Vector.scale(realH/2, viewUpDir));
     l_mid = Vector.add(center, Vector.scale(-realH/2, viewUpDir));
@@ -582,12 +575,6 @@ function calculateCoords() {
     ur = Vector.add(u_mid, Vector.scale(-realW/2, leftDir));
     ll = Vector.add(l_mid, Vector.scale(realW/2, leftDir));
     lr = Vector.add(l_mid, Vector.scale(-realW/2, leftDir));
-
-    // ul.toConsole("ul");
-    // ur.toConsole("ur");
-    // ll.toConsole("ll");
-    // lr.toConsole("lr");
-
 }
 
 
@@ -621,15 +608,7 @@ function raycasting(context) {
             var realPoint = Vector.add(ul, deltaX);
             realPoint = Vector.add(realPoint, deltaY);
 
-            // var realX = (i/w)*(ur.x - ul.x) + ul.x;
-            // var realY = (j/h)*(ll.y - ul.y) + ul.y;
-            // var realZ = 0;
-
-            // var realPoint = new Vector(realX, realY, realZ);
-            // realPoint.toConsole("realPoint");
-
             var rayDir = Vector.subtract(realPoint, eye);
-            // console.log(rayDir)
 
             var screenT = (-((PA*eye.x) + (PB*eye.y) + (PC*eye.z) + PD))/((PA*rayDir.x) + (PB*rayDir.y) + (PC*rayDir.z));
 
@@ -654,19 +633,14 @@ function raycasting(context) {
             var col = null;
             if (realIntersect != null) {
                 var P = Vector.add(eye, Vector.scale(realIntersect, rayDir));
-                //var ellipse = inputEllipsoids[realEllipse];
 
                 col = calculateColor(P, realEllipse, lights);
-
-                // This is the nearest point of intersection in all ellipses. Display it as you like                
             }
             else {
                 // This Ray does not intersect any ellipses. Display Default Color.
                 col = new Color(0 ,0, 0, 255);
 
             }
-            // console.log("i = " + i + " j = " + j)
-            // console.log("col = " + col.r + " " + col.g + " " + col.b)
             
             drawPixel(imagedata, i, j, col);
         }
@@ -675,7 +649,7 @@ function raycasting(context) {
 
 }
 
-// Extra Credit: Changeable Height and Width of the canvas
+// Extra Credit: Changeable Parameters from UI
 function updateParams() {
     // Update Canvas Height and Width
     var width = document.getElementById('width').value;
@@ -722,8 +696,6 @@ function updateParams() {
 }
 
 
-/* main -- here is where execution begins after window load */
-
 function start() {
     var canvas = document.getElementById("viewport"); 
     var context = canvas.getContext("2d"); 
@@ -731,6 +703,8 @@ function start() {
     raycasting(context)
 }
 
+
+/* main -- here is where execution begins after window load */
 function main() {
 	updateParams();
 	start();

@@ -384,6 +384,19 @@ var ur = new Vector(1, 1, 0);
 var ll = new Vector(0, 0, 0);
 var lr = new Vector(1, 0, 0);
 
+// Other Variables
+var inputEllipsoids = getInputEllipsoids("https://ncsucgclass.github.io/prog1/ellipsoids.json");
+
+function calculateNormal(P, ellipse) {
+	var C = new Vector(ellipse.x, ellipse.y, ellipse.z);
+    var A = new Vector(ellipse.a, ellipse.b, ellipse.c);
+    A2 = Vector.multiply(A, A);
+    //A2 = Vector.scale(0.5, A2);
+    var N = Vector.divide(Vector.subtract(P, C), A2);
+    N = Vector.normalize(N);
+    return N;
+}
+
 function findIntersectionWithEllipse(E, D, ellipse, screenT) {
     A = new Vector(ellipse.a, ellipse.b, ellipse.c);
     C = new Vector(ellipse.x, ellipse.y, ellipse.z);
@@ -454,8 +467,39 @@ function correctColorRange2(r) {
 	return r;
 }
 
-function calculateColor(P, ellipse, lights) {
-    //
+function checkShadows(P, light, ei) {
+	var s = 1;
+	for(var i = 0; i < inputEllipsoids.length; i++) {
+        if(i == ei) { 
+        	s = 1; 
+        	continue; 
+        }
+
+        // get Normal
+   //      normal[0] = (x - inputSpheres[sp1].x);
+   //      normal[1] = (y - 1+inputSpheres[sp1].y);
+   //      normal[2] = (z - inputSpheres[sp1].z);
+
+   //      var L = Vector.normalize(Vector.subtract(light, P));
+
+   //      a = dotProduct(lp, lp);
+   //      b = 2 * dotProduct(lp, normal);
+   //      c = dotProduct(normal, normal) - (inputSpheres[sp1].r*inputSpheres[sp1].r);
+
+   //      determinant = (b*b) - (4*a*c);
+
+   //      if(determinant >= 0) { 
+   //      	rt1 = (-b - Math.sqrt(determinant))/(2*a);
+			// rt2 = (-b + Math.sqrt(determinant))/(2*a);
+			// if(rt1 >= 0 && rt2 >= 0)
+   //      		s = 0; 
+   //      } 
+   //      else { s = 1; }
+    }
+}
+
+function calculateColor(P, ei, lights) {
+    var ellipse = inputEllipsoids[ei];
     //var lights = [{"x": -1.0, "y": 3.0, "z": -0.5, "ambient": [1,1,1], "diffuse": [1,1,1], "specular": [1,1,1]}] 
         //{"x": 1, "y": -3, "z": -0.5, "ambient": [1,1,1], "diffuse": [1,1,1], "specular": [1,1,1]}]
     
@@ -553,8 +597,7 @@ function calculateCoords() {
 
 
 function raycasting(context) {
-    var inputEllipsoids = getInputEllipsoids("https://ncsucgclass.github.io/prog1/ellipsoids.json");
-    var lights = getInputEllipsoids("https://raw.githubusercontent.com/NCSUCGClass/prog1/gh-pages/lights.json");
+    var lights = getInputEllipsoids("https://ncsucgclass.github.io/prog1/lights.json");
     var n = inputEllipsoids.length;
 
     var w = context.canvas.width; // as set in html
@@ -616,9 +659,9 @@ function raycasting(context) {
             var col = null;
             if (realIntersect != null) {
                 var P = Vector.add(eye, Vector.scale(realIntersect, rayDir));
-                var ellipse = inputEllipsoids[realEllipse];
+                //var ellipse = inputEllipsoids[realEllipse];
 
-                col = calculateColor(P, ellipse, lights);
+                col = calculateColor(P, realEllipse, lights);
 
                 // This is the nearest point of intersection in all ellipses. Display it as you like                
             }

@@ -475,27 +475,21 @@ function checkShadows(P, light, ei) {
         	continue; 
         }
 
-        // get Normal
-   //      normal[0] = (x - inputSpheres[sp1].x);
-   //      normal[1] = (y - 1+inputSpheres[sp1].y);
-   //      normal[2] = (z - inputSpheres[sp1].z);
+        var ray = Vector.subtract(light, P);
 
-   //      var L = Vector.normalize(Vector.subtract(light, P));
+        var lightT = Math.sqrt(Vector.dot(ray,ray));
 
-   //      a = dotProduct(lp, lp);
-   //      b = 2 * dotProduct(lp, normal);
-   //      c = dotProduct(normal, normal) - (inputSpheres[sp1].r*inputSpheres[sp1].r);
+        var t = findIntersectionWithEllipse(P, ray, inputEllipsoids[i], 0);
 
-   //      determinant = (b*b) - (4*a*c);
+        if (t != null) {
+			if (t < lightT) {
+				s = 0;
 
-   //      if(determinant >= 0) { 
-   //      	rt1 = (-b - Math.sqrt(determinant))/(2*a);
-			// rt2 = (-b + Math.sqrt(determinant))/(2*a);
-			// if(rt1 >= 0 && rt2 >= 0)
-   //      		s = 0; 
-   //      } 
-   //      else { s = 1; }
+			}
+        }
+
     }
+    return s;
 }
 
 function calculateColor(P, ei, lights) {
@@ -524,13 +518,7 @@ function calculateColor(P, ei, lights) {
 
 
         //diffuse
-        var C = new Vector(ellipse.x, ellipse.y, ellipse.z);
-        var A = new Vector(ellipse.a, ellipse.b, ellipse.c);
-        A2 = Vector.multiply(A, A);
-        A2 = Vector.scale(0.5, A2);
-        var N = Vector.divide(Vector.subtract(P, C), A2);
-        N = Vector.normalize(N);
-
+        var N = calculateNormal(P, ellipse);
         var L = Vector.normalize(Vector.subtract(lightPos, P));
 
         var ndotl = Vector.dot(N, L);
@@ -548,10 +536,12 @@ function calculateColor(P, ei, lights) {
         var g3 = correctColorRange(lightColorS.g*ellipse.specular[1]*ndothn);
         var b3 = correctColorRange(lightColorS.b*ellipse.specular[2]*ndothn);
 
+        var s = checkShadows(P, lightPos, ei);
+
         // Add'em all up
-        r += (r1 + r2 + r3);
-        g += (g1 + g2 + g3);
-        b += (b1 + b2 + b3);
+        r += (r1 + s*(r2 + r3));
+        g += (g1 + s*(g2 + g3));
+        b += (b1 + s*(b2 + b3));
     }
     
     // Round up and get them in limits

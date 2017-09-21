@@ -4,45 +4,92 @@
 <meta charset="UTF-8">
 <title>Pixel Drawing</title>
 <script type="text/javascript" src="drawstuff.js"></script>
+<style>
+.main_div > div {
+  display: inline-block;
+}
+</style>
 </head>
 <body onload="main();">
-<canvas id="viewport" width="512" height="512"></canvas>
+<div class="main_div">
+  <div id="ellipsoid_area">
+    <canvas id="viewport" width="512" height="512"></canvas>
 
-<br />
-<h4>Change Height and Width of the canvas: </h4>
-<form action="#">
-  <div>
-  Height: <input type="number" id="height" value="512">
-  Width: <input type="number" id="width" value="512">
-  </div>
-  <div>
-  <h4>Eye Position: </h4>
-  X: <input type="number" id="eyex" step=0.01 value="0.5"> 
-  Y: <input type="number" id="eyey" step=0.01 value="0.5"> 
-  Z: <input type="number" id="eyez" step=0.01 value="-0.5">
-  </div>
-  <div>
-  <h4>LookUp Vector: </h4>
-  X: <input type="number" id="lookupx" step=0.01 value="0.0"> 
-  Y: <input type="number" id="lookupy" step=0.01 value="1.0"> 
-  Z: <input type="number" id="lookupz" step=0.01 value="0.0">
-  </div>
+    <br />
+    <h4>Change Height and Width of the canvas: </h4>
+    <form action="#">
+      <div>
+      Height: <input type="number" id="height" value="512">
+      Width: <input type="number" id="width" value="512">
+      </div>
+      <div>
+      <h4>Eye Position: </h4>
+      X: <input type="number" id="eyex" step=0.01 value="0.5"> 
+      Y: <input type="number" id="eyey" step=0.01 value="0.5"> 
+      Z: <input type="number" id="eyez" step=0.01 value="-0.5">
+      </div>
+      <div>
+      <h4>LookUp Vector: </h4>
+      X: <input type="number" id="lookupx" step=0.01 value="0.0"> 
+      Y: <input type="number" id="lookupy" step=0.01 value="1.0"> 
+      Z: <input type="number" id="lookupz" step=0.01 value="0.0">
+      </div>
 
-  <div>
-  <h4>Look At Vector: </h4>
-  X: <input type="number" id="lookatx" step=0.01 value="0.0"> 
-  Y: <input type="number" id="lookaty" step=0.01 value="0.0"> 
-  Z: <input type="number" id="lookatz" step=0.01 value="1.0">
+      <div>
+      <h4>Look At Vector: </h4>
+      X: <input type="number" id="lookatx" step=0.01 value="0.0"> 
+      Y: <input type="number" id="lookaty" step=0.01 value="0.0"> 
+      Z: <input type="number" id="lookatz" step=0.01 value="1.0">
+      </div>
+
+      <div>
+      <h4>Shadows: </h4>
+      Enable Shadows: <input type="checkbox" id="shadows" checked="true"> 
+      </div>
+
+      <br />
+      <input type="submit" value="Submit" onclick="updateParams();">
+    </form> 
   </div>
+  <div id="triangles_area" style="float:none">
+    <canvas id="viewport2" width="512" height="512"></canvas>
 
-  <div>
-  <h4>Shadows: </h4>
-  Enable Shadows: <input type="checkbox" id="shadows" checked="true"> 
+    <br />
+    <h4>Change Height and Width of the canvas: </h4>
+    <form action="#">
+      <div>
+      Height: <input type="number" id="height_t" value="512">
+      Width: <input type="number" id="width_t" value="512">
+      </div>
+      <div>
+      <h4>Eye Position: </h4>
+      X: <input type="number" id="eyex_t" step=0.01 value="0.5"> 
+      Y: <input type="number" id="eyey_t" step=0.01 value="0.5"> 
+      Z: <input type="number" id="eyez_t" step=0.01 value="-0.5">
+      </div>
+      <div>
+      <h4>LookUp Vector: </h4>
+      X: <input type="number" id="lookupx_t" step=0.01 value="0.0"> 
+      Y: <input type="number" id="lookupy_t" step=0.01 value="1.0"> 
+      Z: <input type="number" id="lookupz_t" step=0.01 value="0.0">
+      </div>
+
+      <div>
+      <h4>Look At Vector: </h4>
+      X: <input type="number" id="lookatx_t" step=0.01 value="0.0"> 
+      Y: <input type="number" id="lookaty_t" step=0.01 value="0.0"> 
+      Z: <input type="number" id="lookatz_t" step=0.01 value="1.0">
+      </div>
+
+      <div>
+      <h4>Shadows: </h4>
+      Enable Shadows: <input type="checkbox" id="shadows_t" checked="true"> 
+      </div>
+
+      <br />
+      <input type="submit" value="Submit" onclick="updateParams();">
+    </form> 
   </div>
-
-  <br />
-  <input type="submit" value="Submit" onclick="updateParams();">
-</form> 
-
+</div>
 </body>
 </html>

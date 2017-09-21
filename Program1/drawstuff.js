@@ -58,6 +58,22 @@ class Color {
     }
 } // end color class
 
+class Triangle {
+	constructor(v0, v1, v2) {
+		this.set(v0, v1, v2);
+	}
+	set(v0, v1, v2) {
+		try {
+			this.v0 = v0; this.v1 = v1; this.v2 = v2;
+		}
+		catch(e){
+			console.log(e);
+		}
+	}
+	toConsole(prefix) {
+        console.log(this.v0.toString("v0") + this.v1.toString("v1") + this.v2.toString("v2"));
+    } // end to console
+}
 
 // Vector class
 class Vector { 
@@ -96,6 +112,10 @@ class Vector {
     toConsole(prefix) {
         console.log(prefix+"["+this.x+","+this.y+","+this.z+"]");
     } // end to console
+
+    toString(prefix="") {
+        return (prefix+"["+this.x+","+this.y+","+this.z+"]");
+    } // end to console
     
     // static dot method
     static dot(v1,v2) {
@@ -111,7 +131,26 @@ class Vector {
             return(NaN);
         }
     } // end dot static method
-    
+
+    // static cross method
+    static cross(v1,v2) {
+        try {
+            if (!(v1 instanceof Vector) || !(v2 instanceof Vector))
+                throw "Vector.cross: non-vector parameter";
+            else {
+            	var x1 = (v1.y*v2.z) - (v1.z*v2.y);
+            	var y1 = (v1.z*v2.x) - (v1.x*v2.z);
+            	var z1 = (v1.x*v2.y) - (v1.y*v2.x);
+            	return (new Vector(x1, y1, z1));
+            }
+        } // end try
+        
+        catch(e) {
+            console.log(e);
+            return(NaN);
+        }
+    } // end cross static method
+
     // static add method
     static add(v1,v2) {
         try {
@@ -373,20 +412,22 @@ var eye = new Vector(0.5, 0.5, -0.5);
 var viewUp = new Vector(0,1,0);
 var lookAt = new Vector(0,0,1);
 
+var eye_t = new Vector(0.5, 0.5, -0.5);
+var viewUp_t = new Vector(0,1,0);
+var lookAt_t = new Vector(0,0,1);
+
 // These are unchanged. If needed change here in code manually.
 var distanceFromEye = 0.5;
 var realW = 1.0;
 var realH = 1.0;
 
 // These are calculated and updated everytime above variables are changed
-var ul = new Vector(0, 1, 0)
-var ur = new Vector(1, 1, 0);
-var ll = new Vector(0, 0, 0);
-var lr = new Vector(1, 0, 0);
 
 // Other Variables
 var shadowsExtra = 1;
+var shadowsExtra_t = 1;
 var inputEllipsoids = getInputEllipsoids("https://ncsucgclass.github.io/prog1/ellipsoids.json");
+var lights = getInputEllipsoids("https://ncsucgclass.github.io/prog1/lights.json");
 
 function calculateNormal(P, ellipse) {
 	var C = new Vector(ellipse.x, ellipse.y, ellipse.z);
@@ -396,6 +437,61 @@ function calculateNormal(P, ellipse) {
     var N = Vector.divide(Vector.subtract(P, C), A2);
     N = Vector.normalize(N);
     return N;
+}
+
+function calculateNormalForTriangle(triangle) {
+	var v1 = Vector.subtract(triangle.v1, triangle.v0);
+	var v2 = Vector.subtract(triangle.v2, triangle.v0);
+
+	var N = Vector.cross(v1, v2);
+	N = Vector.normalize(N);
+    return N;
+}
+
+function findIntersectionWithTriangle(E, D, triangle, screenT) {
+
+	var N = calculateNormalForTriangle(triangle);
+	
+	var numerator = Vector.dot(N, Vector.subtract(triangle.v0, E));
+	var denominator = Vector.dot(N, D);
+
+	if (denominator == 0) {
+		return null;
+	}
+	else {
+		var t = numerator/denominator;
+		if (t > screenT) {
+			// check if point lies inside triangle;
+			var P1 = Vector.add(E, Vector.scale(t, D));
+			var u = Vector.subtract(triangle.v1, triangle.v0);
+			var v = Vector.subtract(triangle.v2, triangle.v0);
+			var w = Vector.subtract(P1, triangle.v0);
+
+			var uv = Vector.dot(u, v);
+			var wv = Vector.dot(w, v);
+			var vv = Vector.dot(v, v);
+			var uu = Vector.dot(u, u);
+			var uw = Vector.dot(u, w);
+
+			var n1 = (uv*wv) - (vv*uw);
+			var n2 = (uv*uw) - (uu*wv);
+			var d = (uv*uv) - (uu*vv);
+
+			var s1 = n1/d;
+			var t1 = n2/d;
+
+			if ((s1 >= 0) && (t1 >= 0) && ((s1+t1) <= 1)) {
+				return t;
+			}
+			else {
+				return null;
+			}
+
+		}
+		else {
+			return null;
+		}
+	}
 }
 
 function findIntersectionWithEllipse(E, D, ellipse, screenT) {
@@ -497,8 +593,8 @@ function checkShadows(P, light, ei) {
     return s;
 }
 
-function calculateColor(P, ei, lights) {
-    var ellipse = inputEllipsoids[ei];
+function calculateColor(P, N, eyeTemp, ei, ellipse, type) {
+    // var ellipse = inputEllipsoids[ei];
     //var lights = [{"x": -1.0, "y": 3.0, "z": -0.5, "ambient": [1,1,1], "diffuse": [1,1,1], "specular": [1,1,1]}] 
     
     //Color = La*Ka + Ld*Kd*(N.L) + Ls*Ks*(N.H)^n
@@ -520,7 +616,8 @@ function calculateColor(P, ei, lights) {
 
 
         //diffuse
-        var N = calculateNormal(P, ellipse);
+        // var N = calculateNormal(P, ellipse);
+        N = Vector.normalize(N);
         var L = Vector.normalize(Vector.subtract(lightPos, P));
 
         var ndotl = Vector.dot(N, L);
@@ -530,7 +627,7 @@ function calculateColor(P, ei, lights) {
         var b2 = correctColorRange(lightColorD.b*ellipse.diffuse[2]*ndotl);
 
         //specular
-        var V = Vector.normalize(Vector.subtract(eye, P));
+        var V = Vector.normalize(Vector.subtract(eyeTemp, P));
         var H = Vector.normalize(Vector.add(L, V));
         var ndothn = Math.pow(Vector.dot(N, H), ellipse.n);
 
@@ -538,7 +635,10 @@ function calculateColor(P, ei, lights) {
         var g3 = correctColorRange(lightColorS.g*ellipse.specular[1]*ndothn);
         var b3 = correctColorRange(lightColorS.b*ellipse.specular[2]*ndothn);
 
-        var s = checkShadows(P, lightPos, ei);
+        var s = 1;
+        if (type == "ellipsoid")
+        	s = checkShadows(P, lightPos, ei);
+
 
         // Add'em all up
         r += (r1 + s*(r2 + r3));
@@ -556,17 +656,17 @@ function calculateColor(P, ei, lights) {
     return col;
 }
 
-function calculateCoords() {
-    var lookAtDir = Vector.normalize(lookAt);
-    var center = Vector.add(eye, Vector.scale(distanceFromEye, lookAtDir));
+function calculateCoords(eyeTemp, lookAtTemp, viewUpTemp) {
+    var lookAtDir = Vector.normalize(lookAtTemp);
+    var center = Vector.add(eyeTemp, Vector.scale(distanceFromEye, lookAtDir));
 
     var leftDir = new Vector();
-    leftDir.x = (lookAt.y*viewUp.z) - (lookAt.z*viewUp.y);
-    leftDir.y = (lookAt.z*viewUp.x) - (lookAt.x*viewUp.z);
-    leftDir.z = (lookAt.x*viewUp.y) - (lookAt.y*viewUp.x);
+    leftDir.x = (lookAtTemp.y*viewUpTemp.z) - (lookAtTemp.z*viewUpTemp.y);
+    leftDir.y = (lookAtTemp.z*viewUpTemp.x) - (lookAtTemp.x*viewUpTemp.z);
+    leftDir.z = (lookAtTemp.x*viewUpTemp.y) - (lookAtTemp.y*viewUpTemp.x);
 
     var leftDir = Vector.normalize(leftDir);
-    var viewUpDir = Vector.normalize(viewUp);
+    var viewUpDir = Vector.normalize(viewUpTemp);
 
     u_mid = Vector.add(center, Vector.scale(realH/2, viewUpDir));
     l_mid = Vector.add(center, Vector.scale(-realH/2, viewUpDir));
@@ -575,19 +675,131 @@ function calculateCoords() {
     ur = Vector.add(u_mid, Vector.scale(-realW/2, leftDir));
     ll = Vector.add(l_mid, Vector.scale(realW/2, leftDir));
     lr = Vector.add(l_mid, Vector.scale(-realW/2, leftDir));
+
+    var result = new Array(4);
+    result[0] = ul;
+    result[1] = ur;
+    result[2] = ll;
+    result[3] = lr;
+
+    return result;
+}
+
+function getTriangles(triangleJSON) {	
+	var vertices = new Array(triangleJSON[1].vertices.length);
+	var triangles = new Array(triangleJSON[2].triangles.length);
+
+	for(var i = 0; i < vertices.length; i++) {
+		var vertex = triangleJSON[1].vertices[i];
+		var t = new Vector(vertex[0], vertex[1], vertex[2]);
+		vertices[i] = t;
+	}
+
+	for(var i = 0; i < triangles.length; i++) {
+		var triangle = triangleJSON[2].triangles[i];
+		var t = new Triangle(vertices[triangle[0]], vertices[triangle[1]], vertices[triangle[2]]);
+		triangles[i] = t;
+	}
+
+	return triangles;
+}
+
+function raycastingTriangles(context2) {
+    
+    var triangleJSON = getInputEllipsoids("https://ncsucgclass.github.io/prog1/triangles.json");
+    var material = triangleJSON[0].material;
+    material.n = 1;
+
+    var triangles = getTriangles(triangleJSON);
+
+    var w2 = context2.canvas.width; // as set in html
+    var h2 = context2.canvas.height;  // as set in html
+    var imagedata2 = context2.createImageData(w2,h2);
+
+    var result = calculateCoords(eye_t, lookAt_t, viewUp_t);
+
+    var ul = result[0];
+	var ur = result[1];
+	var ll = result[2];
+	var lr = result[3];
+
+    var PA = ul.y*(ur.z - lr.z) + ur.y*(lr.z - ul.z) + lr.y*(ul.z - ur.z);
+    var PB = ul.z*(ur.x - lr.x) + ur.z*(lr.x - ul.x) + lr.z*(ul.x - ur.x);
+    var PC = ul.x*(ur.y - lr.y) + ur.x*(lr.y - ul.y) + lr.x*(ul.y - ur.y);
+    var PD = (-ul.x*((ur.y*lr.z) - (lr.y*ur.z))) + (-ur.x*((lr.y*ul.z) - (ul.y*lr.z))) + (-lr.x*((ul.y*ur.z) - (ur.y*ul.z)));
+
+    var realRightDir = Vector.subtract(ur, ul);
+    realRightDir = Vector.normalize(realRightDir);
+    var realDownDir = Vector.subtract(ll, ul);
+    realDownDir = Vector.normalize(realDownDir);
+
+    for (var i = 0; i < w2; i++) {
+        for (var j = 0; j < h2; j++) {
+
+            var deltaX = Vector.scale((i/w2), realRightDir);
+            var deltaY = Vector.scale((j/h2), realDownDir);
+
+            var realPoint = Vector.add(ul, deltaX);
+            realPoint = Vector.add(realPoint, deltaY);
+
+            var rayDir = Vector.subtract(realPoint, eye_t);
+
+            var screenT = (-((PA*eye_t.x) + (PB*eye_t.y) + (PC*eye_t.z) + PD))/((PA*rayDir.x) + (PB*rayDir.y) + (PC*rayDir.z));
+
+            var realTriangle = 0;
+            var realIntersectT = null;
+            for (var tr = 0; tr < triangles.length; tr++) {
+                var te = findIntersectionWithTriangle(eye_t, rayDir, triangles[tr], screenT);
+                // console.log("te = ", te)
+                if (te != null) {
+                    if (realIntersectT != null) {
+                        if (realIntersectT > te) {
+                            realIntersectT = te;
+                            realTriangle = tr;
+                        }
+                    }
+                    else {
+                        realIntersectT = te;
+                        realTriangle = tr;
+                    }
+                }
+            }
+
+            var col2 = null;
+            if (realIntersectT != null) {
+                var P = Vector.add(eye_t, Vector.scale(realIntersectT, rayDir));
+                // col2 = new Color(material.diffuse[0]*255, material.diffuse[1]*255, material.diffuse[2]*255);
+                // col2 = new Color(material.ambient[0]*255, material.ambient[1]*255, material.ambient[2]*255);
+                var N = calculateNormalForTriangle(triangles[realTriangle]);
+                col2 = calculateColor(P, N, eye_t, realTriangle, material, "triangle");
+            }
+            else {
+                // This Ray does not intersect any triangles. Display Default Color.
+                col2 = new Color(0 ,0, 0, 255);
+            }
+            
+            drawPixel(imagedata2, i, j, col2);
+        }
+    }
+    context2.putImageData(imagedata2, 0, 0);
+
 }
 
 
-function raycasting(context) {
-    var lights = getInputEllipsoids("https://ncsucgclass.github.io/prog1/lights.json");
+function raycastingEllipsoids(context) {
     var n = inputEllipsoids.length;
 
     var w = context.canvas.width; // as set in html
     var h = context.canvas.height;  // as set in html
+
     var imagedata = context.createImageData(w,h);
 
-    calculateCoords();
+    var result = calculateCoords(eye, lookAt, viewUp);
 
+    var ul = result[0];
+	var ur = result[1];
+	var ll = result[2];
+	var lr = result[3];
 
     var PA = ul.y*(ur.z - lr.z) + ur.y*(lr.z - ul.z) + lr.y*(ul.z - ur.z);
     var PB = ul.z*(ur.x - lr.x) + ur.z*(lr.x - ul.x) + lr.z*(ul.x - ur.x);
@@ -630,11 +842,12 @@ function raycasting(context) {
                     }
                 }
             }
+
             var col = null;
             if (realIntersect != null) {
                 var P = Vector.add(eye, Vector.scale(realIntersect, rayDir));
-
-                col = calculateColor(P, realEllipse, lights);
+                var N = calculateNormal(P, inputEllipsoids[realEllipse]);
+                col = calculateColor(P, N, eye, realEllipse, inputEllipsoids[realEllipse], "ellipsoid");
             }
             else {
                 // This Ray does not intersect any ellipses. Display Default Color.
@@ -691,6 +904,47 @@ function updateParams() {
 		shadowsExtra = 0;
     }
 
+
+	var width_t = document.getElementById('width_t').value;
+    var height_t = document.getElementById('height_t').value;
+
+    var canvas2 = document.getElementById('viewport2');
+    canvas2.setAttribute('height', height_t);
+    canvas2.setAttribute('width', width_t);
+
+    // Update Eye Position
+    var eyex_t = document.getElementById('eyex_t').value;
+    var eyey_t = document.getElementById('eyey_t').value;
+    var eyez_t = document.getElementById('eyez_t').value;
+
+    eye_t = new Vector(parseFloat(eyex_t), parseFloat(eyey_t), parseFloat(eyez_t));
+
+    // Update look At vector
+    var lookatx_t = document.getElementById('lookatx_t').value;
+    var lookaty_t = document.getElementById('lookaty_t').value;
+    var lookatz_t = document.getElementById('lookatz_t').value;
+
+    lookAt_t = new Vector(parseFloat(lookatx_t), parseFloat(lookaty_t), parseFloat(lookatz_t));
+    lookAt_t = Vector.normalize(lookAt_t);
+
+    // Update view Up Vector
+    var lookupx_t = document.getElementById('lookupx_t').value;
+    var lookupy_t = document.getElementById('lookupy_t').value;
+    var lookupz_t = document.getElementById('lookupz_t').value;
+
+    viewUp_t = new Vector(parseFloat(lookupx_t), parseFloat(lookupy_t), parseFloat(lookupz_t));
+    viewUp_t = Vector.normalize(viewUp_t);
+
+    //Shadows
+    var shadowTemp = document.getElementById('shadows_t').checked;
+    if (shadowTemp == true) {
+    	shadowsExtra_t = 1;
+    }
+    else {
+		shadowsExtra_t = 0;
+    }
+
+
     // Re-render the view
     start();
 }
@@ -700,7 +954,11 @@ function start() {
     var canvas = document.getElementById("viewport"); 
     var context = canvas.getContext("2d"); 
 
-    raycasting(context)
+    var canvas2 = document.getElementById("viewport2"); 
+    var context2 = canvas2.getContext("2d"); 
+
+    raycastingEllipsoids(context);
+    raycastingTriangles(context2);
 }
 
 

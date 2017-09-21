@@ -705,7 +705,7 @@ function getTriangles(triangleJSON) {
 function raycasting(context) {
 	var triangleJSON = getInputEllipsoids("https://ncsucgclass.github.io/prog1/triangles.json");
     var material = triangleJSON[0].material;
-    material.n = 1;
+    //material.n = 1;
 
     var triangles = getTriangles(triangleJSON);
     var n = inputEllipsoids.length;

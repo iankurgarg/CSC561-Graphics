@@ -385,6 +385,7 @@ var ll = new Vector(0, 0, 0);
 var lr = new Vector(1, 0, 0);
 
 // Other Variables
+var shadowsExtra = 1;
 var inputEllipsoids = getInputEllipsoids("https://ncsucgclass.github.io/prog1/ellipsoids.json");
 
 function calculateNormal(P, ellipse) {
@@ -468,6 +469,10 @@ function correctColorRange2(r) {
 }
 
 function checkShadows(P, light, ei) {
+	if (shadowsExtra == 0) {
+		return 1;
+	}
+
 	var s = 1;
 	for(var i = 0; i < inputEllipsoids.length; i++) {
         if(i == ei) { 
@@ -703,26 +708,30 @@ function updateParams() {
     viewUp = new Vector(parseFloat(lookupx), parseFloat(lookupy), parseFloat(lookupz));
     viewUp = Vector.normalize(viewUp);
 
+    //Shadows
+    var shadowTemp = document.getElementById('shadows').checked;
+    if (shadowTemp == true) {
+    	shadowsExtra = 1;
+    }
+    else {
+		shadowsExtra = 0;
+    }
+
     // Re-render the view
-    main();
+    start();
 }
 
 
 /* main -- here is where execution begins after window load */
 
-function main() {
-
-    // Get the canvas and context
+function start() {
     var canvas = document.getElementById("viewport"); 
     var context = canvas.getContext("2d"); 
-    // Create the image
-    //drawRandPixels(context);
-      // shows how to draw pixels
-    
-    //drawRandPixelsInInputEllipsoids(context);
-      // shows how to draw pixels and read input file
-      
-    //drawInputEllipsoidsUsingArcs(context);
+
     raycasting(context)
-      // shows how to read input file, but not how to draw pixels
+}
+
+function main() {
+	updateParams();
+	start();
 }

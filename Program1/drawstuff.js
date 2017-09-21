@@ -706,8 +706,7 @@ function getTriangles(triangleJSON) {
 
 function raycastingTriangles(context2) {
     
-    var triangleJSON = getInputEllipsoids("https://raw.githubusercontent.com/iankurgarg/Graphics/master/Program1/triangles.json?token=ACHDY9Xvn0lQII3sUsL3KEU_K1X0X8e3ks5ZzHchwA%3D%3D");
-    // var triangleJSON = getInputEllipsoids("https://ncsucgclass.github.io/prog1/triangles.json");
+    var triangleJSON = getInputEllipsoids("https://ncsucgclass.github.io/prog1/triangles.json");
     var material = triangleJSON[0].material;
     material.n = 1;
 

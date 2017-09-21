@@ -16,42 +16,52 @@
     <canvas id="viewport" width="512" height="512"></canvas>
 
     <br />
-    <h4>Change Height and Width of the canvas: </h4>
     <form action="#">
       <div>
+      <b>Change Height and Width of the canvas: </b>
       Height: <input type="number" id="height" value="512">
       Width: <input type="number" id="width" value="512">
       </div>
+
+      <br />
       <div>
-      <h4>Eye Position: </h4>
+      <b>Eye Position: </b>
       X: <input type="number" id="eyex" step=0.01 value="0.5"> 
       Y: <input type="number" id="eyey" step=0.01 value="0.5"> 
       Z: <input type="number" id="eyez" step=0.01 value="-0.5">
       </div>
+
+      <br />
       <div>
-      <h4>LookUp Vector: </h4>
+      <b>LookUp Vector: </b>
       X: <input type="number" id="lookupx" step=0.01 value="0.0"> 
       Y: <input type="number" id="lookupy" step=0.01 value="1.0"> 
       Z: <input type="number" id="lookupz" step=0.01 value="0.0">
       </div>
 
+      <br />
       <div>
-      <h4>Look At Vector: </h4>
+      <b>Look At Vector: </b>
       X: <input type="number" id="lookatx" step=0.01 value="0.0"> 
       Y: <input type="number" id="lookaty" step=0.01 value="0.0"> 
       Z: <input type="number" id="lookatz" step=0.01 value="1.0">
       </div>
-
+      <br />
       <div>
-      <h4>Shadows: </h4>
+      <b>Shadows: </b>
       Enable Shadows: <input type="checkbox" id="shadows" checked="true"> 
+      </div>
+      <br />
+      <div>
+      <b>Triangles: </b>
+      Show Triangles: <input type="checkbox" id="triangles"> 
       </div>
 
       <br />
       <input type="submit" value="Submit" onclick="updateParams();">
     </form> 
   </div>
-  <div id="triangles_area" style="float:none">
+  <!--div id="triangles_area" style="float:none">
     <canvas id="viewport2" width="512" height="512"></canvas>
 
     <br />
@@ -89,7 +99,7 @@
       <br />
       <input type="submit" value="Submit" onclick="updateParams();">
     </form> 
-  </div>
+  </div-->
 </div>
 </body>
 </html>

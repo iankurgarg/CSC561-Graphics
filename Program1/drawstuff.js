@@ -425,7 +425,7 @@ var trianglesExtra = 0;
 var inputEllipsoids = getInputEllipsoids("https://ncsucgclass.github.io/prog1/ellipsoids.json");
 var lights = getInputEllipsoids("https://ncsucgclass.github.io/prog1/lights.json");
 
-function calculateNormal(P, ellipse) {
+function calculateNormalForEllipsoid(P, ellipse) {
 	var C = new Vector(ellipse.x, ellipse.y, ellipse.z);
     var A = new Vector(ellipse.a, ellipse.b, ellipse.c);
     A2 = Vector.multiply(A, A);
@@ -441,6 +441,7 @@ function calculateNormalForTriangle(triangle) {
 
 	var N = Vector.cross(v1, v2);
 	N = Vector.normalize(N);
+	//N = Vector.scale(-1, N);
     return N;
 }
 
@@ -589,7 +590,7 @@ function checkShadows(P, light, ei) {
     return s;
 }
 
-function calculateColor(P, N, eyeTemp, ei, ellipse, type) {
+function calculateColor(P, N, eyeTemp, ei, colorStruct, type) {
     // var ellipse = inputEllipsoids[ei];
     //var lights = [{"x": -1.0, "y": 3.0, "z": -0.5, "ambient": [1,1,1], "diffuse": [1,1,1], "specular": [1,1,1]}] 
     
@@ -606,30 +607,30 @@ function calculateColor(P, N, eyeTemp, ei, ellipse, type) {
         var lightColorS = new Color(light.specular[0], light.specular[1], light.specular[2]);
 
         // Ambient
-        var r1 = correctColorRange(ellipse.ambient[0]*lightColorA.r);
-        var g1 = correctColorRange(ellipse.ambient[1]*lightColorA.g);
-        var b1 = correctColorRange(ellipse.ambient[2]*lightColorA.b);
+        var r1 = correctColorRange(colorStruct.ambient[0]*lightColorA.r);
+        var g1 = correctColorRange(colorStruct.ambient[1]*lightColorA.g);
+        var b1 = correctColorRange(colorStruct.ambient[2]*lightColorA.b);
 
 
         //diffuse
-        // var N = calculateNormal(P, ellipse);
+        // var N = calculateNormalForEllipsoid(P, ellipse);
         N = Vector.normalize(N);
         var L = Vector.normalize(Vector.subtract(lightPos, P));
 
         var ndotl = Vector.dot(N, L);
 
-        var r2 = correctColorRange(lightColorD.r*ellipse.diffuse[0]*ndotl);
-        var g2 = correctColorRange(lightColorD.g*ellipse.diffuse[1]*ndotl);
-        var b2 = correctColorRange(lightColorD.b*ellipse.diffuse[2]*ndotl);
+        var r2 = correctColorRange(lightColorD.r*colorStruct.diffuse[0]*ndotl);
+        var g2 = correctColorRange(lightColorD.g*colorStruct.diffuse[1]*ndotl);
+        var b2 = correctColorRange(lightColorD.b*colorStruct.diffuse[2]*ndotl);
 
         //specular
         var V = Vector.normalize(Vector.subtract(eyeTemp, P));
         var H = Vector.normalize(Vector.add(L, V));
-        var ndothn = Math.pow(Vector.dot(N, H), ellipse.n);
+        var ndothn = Math.pow(Vector.dot(N, H), colorStruct.n);
 
-        var r3 = correctColorRange(lightColorS.r*ellipse.specular[0]*ndothn);
-        var g3 = correctColorRange(lightColorS.g*ellipse.specular[1]*ndothn);
-        var b3 = correctColorRange(lightColorS.b*ellipse.specular[2]*ndothn);
+        var r3 = correctColorRange(lightColorS.r*colorStruct.specular[0]*ndothn);
+        var g3 = correctColorRange(lightColorS.g*colorStruct.specular[1]*ndothn);
+        var b3 = correctColorRange(lightColorS.b*colorStruct.specular[2]*ndothn);
 
         var s = 1;
         if (type == "ellipsoid")
@@ -704,7 +705,7 @@ function getTriangles(triangleJSON) {
 function raycasting(context) {
 	var triangleJSON = getInputEllipsoids("https://ncsucgclass.github.io/prog1/triangles.json");
     var material = triangleJSON[0].material;
-    material.n = 2;
+    material.n = 1;
 
     var triangles = getTriangles(triangleJSON);
     var n = inputEllipsoids.length;
@@ -814,7 +815,7 @@ function raycasting(context) {
             if (type == "ellipsoid") {
             	real_var = realIntersect;
             	P = Vector.add(eye, Vector.scale(realIntersect, rayDir));
-            	N = calculateNormal(P, inputEllipsoids[realEllipse]);
+            	N = calculateNormalForEllipsoid(P, inputEllipsoids[realEllipse]);
             	col = calculateColor(P, N, eye, realEllipse, inputEllipsoids[realEllipse], "ellipsoid");
             }
             else if (type == "triangle"){

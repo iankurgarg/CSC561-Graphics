@@ -58,6 +58,8 @@ class Color {
     }
 } // end color class
 
+
+// Class Triangle for representing a triangle. Contains three vertices (represented as vectors)
 class Triangle {
 	constructor(v0, v1, v2) {
 		this.set(v0, v1, v2);
@@ -277,27 +279,7 @@ function drawPixel(imagedata,x,y,color) {
         console.log(e);
     }
 } // end drawPixel
-    
-// draw random pixels
-function drawRandPixels(context) {
-    var c = new Color(0,0,0,0); // the color at the pixel: black
-    var w = context.canvas.width;
-    var h = context.canvas.height;
-    var imagedata = context.createImageData(w,h);
-    const PIXEL_DENSITY = 0.01;
-    var numPixels = (w*h)*PIXEL_DENSITY; 
-    
-    // Loop over 1% of the pixels in the image
-    for (var x=0; x<numPixels; x++) {
-        c.change(Math.random()*255,Math.random()*255,
-            Math.random()*255,255); // rand color
-        drawPixel(imagedata,
-            Math.floor(Math.random()*w),
-            Math.floor(Math.random()*h),
-                c);
-    } // end for x
-    context.putImageData(imagedata, 0, 0);
-} // end draw random pixels
+
 
 // get the input ellipsoids from the standard class URL
 function getInputEllipsoids(INPUT_ELLIPSOIDS_URL) {
@@ -319,93 +301,6 @@ function getInputEllipsoids(INPUT_ELLIPSOIDS_URL) {
         return JSON.parse(httpReq.response); 
 } // end get input ellipsoids
 
-// put random points in the ellipsoids from the class github
-function drawRandPixelsInInputEllipsoids(context) {
-    var inputEllipsoids = getInputEllipsoids();
-    var w = context.canvas.width;
-    var h = context.canvas.height;
-    var imagedata = context.createImageData(w,h);
-    const PIXEL_DENSITY = 0.05;
-    var numCanvasPixels = (w*h)*PIXEL_DENSITY; 
-    
-    if (inputEllipsoids != String.null) { 
-        var x = 0; var y = 0; // pixel coord init
-        var cx = 0; var cy = 0; // init center x and y coord
-        var ellipsoidXRadius = 0; // init ellipsoid x radius
-        var ellipsoidYRadius = 0; // init ellipsoid y radius
-        var numEllipsoidPixels = 0; // init num pixels in ellipsoid
-        var c = new Color(0,0,0,0); // init the ellipsoid color
-        var n = inputEllipsoids.length; // the number of input ellipsoids
-        //console.log("number of ellipses: " + n);
-
-        // Loop over the ellipsoids, draw rand pixels in each
-        for (var e=0; e<n; e++) {
-            cx = w*inputEllipsoids[e].x; // ellipsoid center x
-            cy = h*inputEllipsoids[e].y; // ellipsoid center y
-            ellipsoidXRadius = Math.round(w*inputEllipsoids[e].a); // x radius
-            ellipsoidYRadius = Math.round(h*inputEllipsoids[e].b); // y radius
-            numEllipsoidPixels = inputEllipsoids[e].a*inputEllipsoids[e].b*Math.PI; // projected ellipsoid area
-            numEllipsoidPixels *= PIXEL_DENSITY * w * h; // percentage of ellipsoid area to render to pixels
-            numEllipsoidPixels = Math.round(numEllipsoidPixels);
-            console.log("ellipsoid x radius: "+ellipsoidXRadius);
-            console.log("ellipsoid y radius: "+ellipsoidYRadius);
-            console.log("num ellipsoid pixels: "+numEllipsoidPixels);
-            c.change(
-                inputEllipsoids[e].diffuse[0]*255,
-                inputEllipsoids[e].diffuse[1]*255,
-                inputEllipsoids[e].diffuse[2]*255,
-                255); // ellipsoid diffuse color
-            for (var p=0; p<numEllipsoidPixels; p++) {
-                do {
-                    x = Math.random()*2 - 1; // in unit square 
-                    y = Math.random()*2 - 1; // in unit square
-                } while (Math.sqrt(x*x + y*y) > 1) // a circle is also an ellipse
-                drawPixel(imagedata,
-                    cx+Math.round(x*ellipsoidXRadius),
-                    cy+Math.round(y*ellipsoidYRadius),c);
-                //console.log("color: ("+c.r+","+c.g+","+c.b+")");
-                //console.log("x: "+Math.round(w*inputEllipsoids[e].x));
-                //console.log("y: "+Math.round(h*inputEllipsoids[e].y));
-            } // end for pixels in ellipsoid
-        } // end for ellipsoids
-        context.putImageData(imagedata, 0, 0);
-    } // end if ellipsoids found
-} // end draw rand pixels in input ellipsoids
-
-// draw 2d projections read from the JSON file at class github
-function drawInputEllipsoidsUsingArcs(context) {
-    var inputEllipsoids = getInputEllipsoids();
-    
-    
-    if (inputEllipsoids != String.null) { 
-        var c = new Color(0,0,0,0); // the color at the pixel: black
-        var w = context.canvas.width;
-        var h = context.canvas.height;
-        var n = inputEllipsoids.length; 
-        //console.log("number of ellipsoids: " + n);
-
-        // Loop over the ellipsoids, draw each in 2d
-        for (var e=0; e<n; e++) {
-            context.fillStyle = 
-                "rgb(" + Math.floor(inputEllipsoids[e].diffuse[0]*255)
-                +","+ Math.floor(inputEllipsoids[e].diffuse[1]*255)
-                +","+ Math.floor(inputEllipsoids[e].diffuse[2]*255) +")"; // diffuse color
-            context.save(); // remember previous (non-) scale
-            context.translate(w*inputEllipsoids[e].x,h*inputEllipsoids[e].y); // translate ellipsoid to ctr
-            context.scale(1, inputEllipsoids[e].b/inputEllipsoids[e].a); // scale by ellipsoid ratio 
-            context.beginPath();
-            context.arc(0,0,Math.round(w*inputEllipsoids[e].a),0,2*Math.PI);
-            context.restore(); // undo scale before fill so stroke width unscaled
-            context.fill();
-            //console.log(context.fillStyle);
-            //console.log("x: "+Math.round(w*inputEllipsoids[e].x));
-            //console.log("y: "+Math.round(h*inputEllipsoids[e].y));
-            //console.log("a: "+Math.round(w*inputEllipsoids[e].a));
-            //console.log("b: "+Math.round(h*inputEllipsoids[e].b));
-        } // end for ellipsoids
-    } // end if ellipsoids found
-} // end draw input ellipsoids
-
 
 // These Variables are udpated through the interface
 var eye = new Vector(0.5, 0.5, -0.5);
@@ -425,6 +320,7 @@ var trianglesExtra = 0;
 var inputEllipsoids = getInputEllipsoids("https://ncsucgclass.github.io/prog1/ellipsoids.json");
 var lights = getInputEllipsoids("https://ncsucgclass.github.io/prog1/lights.json");
 
+// Calculates a normal at a point for a given ellipsoid
 function calculateNormalForEllipsoid(P, ellipse) {
 	var C = new Vector(ellipse.x, ellipse.y, ellipse.z);
     var A = new Vector(ellipse.a, ellipse.b, ellipse.c);
@@ -435,6 +331,7 @@ function calculateNormalForEllipsoid(P, ellipse) {
     return N;
 }
 
+// Calcualtes a normal for a given triangle (doesn't need a point as it is a plane and all points have the same normal)
 function calculateNormalForTriangle(triangle) {
 	var v1 = Vector.subtract(triangle.v1, triangle.v0);
 	var v2 = Vector.subtract(triangle.v2, triangle.v0);
@@ -445,6 +342,7 @@ function calculateNormalForTriangle(triangle) {
     return N;
 }
 
+// Finds intersection between a ray and a triangle. Returns "t" value for the ray or null if no intersection.
 function findIntersectionWithTriangle(E, D, triangle, screenT) {
 
 	var N = calculateNormalForTriangle(triangle);
@@ -453,10 +351,13 @@ function findIntersectionWithTriangle(E, D, triangle, screenT) {
 	var denominator = Vector.dot(N, D);
 
 	if (denominator == 0) {
+        // Given ray is parallel to the plane containing triangle.
 		return null;
 	}
 	else {
 		var t = numerator/denominator;
+        // t signifies intersection with plane containing triangle. Now check if it lies inside triangle.
+        // Check if the point of intersection is behind the screen.
 		if (t > screenT) {
 			// check if point lies inside triangle;
 			var P1 = Vector.add(E, Vector.scale(t, D));
@@ -491,6 +392,7 @@ function findIntersectionWithTriangle(E, D, triangle, screenT) {
 	}
 }
 
+// Calculates intersection of a ray with a given ellipsoid. Returns "t" for the ray and null if no intersection found.
 function findIntersectionWithEllipse(E, D, ellipse, screenT) {
     A = new Vector(ellipse.a, ellipse.b, ellipse.c);
     C = new Vector(ellipse.x, ellipse.y, ellipse.z);
@@ -522,9 +424,11 @@ function findIntersectionWithEllipse(E, D, ellipse, screenT) {
     // console.log('quadD = ', quadD)
 
     if (quadD >= 0) {
+        // One or more intersections
         var t1 = (-b - Math.sqrt(quadD))/(2*a);
         var t2 = (-b + Math.sqrt(quadD))/(2*a);
 
+        //find smallest t which is behind the screen
         if (t1 > screenT && t2 > screenT) {
             if (t1 < t2) {
                 return t1;
@@ -548,6 +452,7 @@ function findIntersectionWithEllipse(E, D, ellipse, screenT) {
     }
 }
 
+// functions to correct the range of the color r g b values.
 function correctColorRange(r) {
 	r = Math.round((r)*255);
 	r = Math.min(r, 255)
@@ -561,6 +466,9 @@ function correctColorRange2(r) {
 	return r;
 }
 
+// Given a point, light source location and index of current ellipsoid, finds out if any other ellipsoids
+// will create a shadow for current light source at current point.
+// Returns s = 1 or 0 (0 signifying shadow)
 function checkShadows(P, light, ei) {
 	if (shadowsExtra == 0) {
 		return 1;
@@ -590,6 +498,10 @@ function checkShadows(P, light, ei) {
     return s;
 }
 
+// Given a point P, normal to the surface N, eye location, current object id, 
+// color struct -> contains the ambient, diffuse, specular information and the n coefficient.
+// type can be either ellipsoid or triangle.
+// return the color object. 
 function calculateColor(P, N, eyeTemp, ei, colorStruct, type) {
     // var ellipse = inputEllipsoids[ei];
     //var lights = [{"x": -1.0, "y": 3.0, "z": -0.5, "ambient": [1,1,1], "diffuse": [1,1,1], "specular": [1,1,1]}] 
@@ -653,6 +565,7 @@ function calculateColor(P, N, eyeTemp, ei, colorStruct, type) {
     return col;
 }
 
+//Calculates coordinates of the viewing window in real world based on viewUp, lookAt and eye location.
 function calculateCoords(eyeTemp, lookAtTemp, viewUpTemp) {
     var lookAtDir = Vector.normalize(lookAtTemp);
     var center = Vector.add(eyeTemp, Vector.scale(distanceFromEye, lookAtDir));
@@ -682,6 +595,7 @@ function calculateCoords(eyeTemp, lookAtTemp, viewUpTemp) {
     return result;
 }
 
+// reads in triangles json and then returns a array of Triangle Class Objects
 function getTriangles(triangleJSON) {	
 	var vertices = new Array(triangleJSON[1].vertices.length);
 	var triangles = new Array(triangleJSON[2].triangles.length);
@@ -701,7 +615,7 @@ function getTriangles(triangleJSON) {
 	return triangles;
 }
 
-
+// Main function that runs ray casting for both ellipsoids and triangles and generates the image.
 function raycasting(context) {
 	var triangleJSON = getInputEllipsoids("https://ncsucgclass.github.io/prog1/triangles.json");
     var material = triangleJSON[0].material;
@@ -732,21 +646,26 @@ function raycasting(context) {
     var realDownDir = Vector.subtract(ll, ul);
     realDownDir = Vector.normalize(realDownDir);
 
+    // Traverse over all pixels in the viewport
     for (var i = 0; i < w; i++) {
         for (var j = 0; j < h; j++) {
-
+            // Get real world coordiante of the pixel
             var deltaX = Vector.scale((i/w), realRightDir);
             var deltaY = Vector.scale((j/h), realDownDir);
 
             var realPoint = Vector.add(ul, deltaX);
             realPoint = Vector.add(realPoint, deltaY);
 
+            // Get ray direction for current point.
             var rayDir = Vector.subtract(realPoint, eye);
 
+            // find "t" value where screen intersects the current ray.
+            // Used for ensuring that intersection points are behind the screen.
             var screenT = (-((PA*eye.x) + (PB*eye.y) + (PC*eye.z) + PD))/((PA*rayDir.x) + (PB*rayDir.y) + (PC*rayDir.z));
 
             var realIntersect = null;
             var realEllipse = 0;
+            // traverse over ellipsoids and find nearest intersection if any
             for (var e = 0; e < n; e++) {
                 var te = findIntersectionWithEllipse(eye, rayDir, inputEllipsoids[e], screenT);
                 // console.log("te = ", te)
@@ -767,6 +686,7 @@ function raycasting(context) {
             var realTriangle = 0;
             var realIntersectT = null;
 
+            // traverse over triangles and find nearest intersection
             if (trianglesExtra == 1) {
 	            for (var tr = 0; tr < triangles.length; tr++) {
 	                var te = findIntersectionWithTriangle(eye, rayDir, triangles[tr], screenT);
@@ -786,6 +706,7 @@ function raycasting(context) {
 	            }
         	}
 
+            // find which is the nearest intersection out of both.
             var N = null;
             var type = null;
             var real_var = null;
@@ -812,6 +733,7 @@ function raycasting(context) {
             	}
             }
 
+            // calculate color for the nearest point based on ellipsoid or triangle.
             if (type == "ellipsoid") {
             	real_var = realIntersect;
             	P = Vector.add(eye, Vector.scale(realIntersect, rayDir));
@@ -828,9 +750,11 @@ function raycasting(context) {
             	col = new Color(0 ,0, 0, 255);
             }
             
+            // draw the calcualted color and current location
             drawPixel(imagedata, i, j, col);
         }
     }
+    // update the viewport context with new image data.
     context.putImageData(imagedata, 0, 0);
 
 }
@@ -902,6 +826,5 @@ function start() {
 
 /* main -- here is where execution begins after window load */
 function main() {
-	updateParams();
 	start();
 }

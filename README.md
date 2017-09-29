@@ -10,3 +10,8 @@ Author: Ankur Garg (agarg12@ncsu.edu)
 -- off-axis and rectangular projections
 -- shadows during ray casting
 -- render triangles
+
+
+## References
+For more details about the course assignments and the projects, please visit the course webiste [here](http://cgclass.csc.ncsu.edu/p/course-index.html)
+

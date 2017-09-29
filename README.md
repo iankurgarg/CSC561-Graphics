@@ -1,4 +1,4 @@
-# Graphics
+# Course Assignments
 Homeworks and other stuff related to Graphics Course (Fall 2017) <br />
 Author: Ankur Garg (agarg12@ncsu.edu)
 
@@ -14,4 +14,3 @@ Author: Ankur Garg (agarg12@ncsu.edu)
 
 ## References
 For more details about the course assignments and the projects, please visit the course webiste [here](http://cgclass.csc.ncsu.edu/p/course-index.html)
-

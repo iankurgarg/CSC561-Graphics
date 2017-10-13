@@ -10,6 +10,11 @@ Author: Ankur Garg (agarg12@ncsu.edu)
   - off-axis and rectangular projections
   - shadows during ray casting
   - render triangles
+  
+- [Program 2](./Program2)
+  - Modelling
+  - Transforms
+  - Lighting on 3D Objects
 
 
 ## References

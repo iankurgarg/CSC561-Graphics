@@ -14,6 +14,13 @@ var colotBuffer; // this contains vertex colors in triples
 var vertexBuffer; // this contains vertex coordinates in triples
 var triangleBuffer; // this contains indices into vertexBuffer in triples
 
+//Buffers for ellipsoids
+var ellipsoidsNormalBuffer;
+var ellipsoidsVertexColorBuffer;
+var ellipsoidsVertexTextureCoordBuffer;
+var ellipsoidsVertexPositionBuffer;
+var ellipsiodsVertexIndexBuffer;
+
 var triBufferSize = 0; // the number of indices in the triangle buffer
 
 var vertexPositionAttrib; // where to put position for vertex shader
@@ -71,6 +78,108 @@ function setupWebGL() {
     } // end catch
  
 } // end setupWebGL
+
+function loadEllipsoids() {
+    var inputEllipsoids = getJSONFile(INPUT_SPHERES_URL, "spheres");
+    
+    if (inputEllipsoids != null) {
+        var indexOffset = 0;
+        var vertexPositionData = [];
+        var normalData = [];
+        var textureCoordData = [];
+        var colorData = [];
+        var indexData = [];
+        for (var i = 0; i < inputEllipsoids.length; i++) {
+            var ambient = inputEllipsoids[i].ambient;
+            var diffuse = inputEllipsoids[i].diffuse;
+            var specular = inputEllipsoids[i].specular;
+
+            var latitudeBands = 30;
+            var longitudeBands = 30;
+            var radius = [inputEllipsoids[i].a, inputEllipsoids[i].b, inputEllipsoids[i].c];
+            // var radius = [2,2,2];
+            var center = [inputEllipsoids[i].x, inputEllipsoids[i].y, inputEllipsoids[i].z];
+            
+            for (var latNumber = 0; latNumber <= latitudeBands; latNumber++) {
+                var theta = latNumber * Math.PI / latitudeBands;
+                var sinTheta = Math.sin(theta);
+                var cosTheta = Math.cos(theta);
+
+                for (var longNumber=0; longNumber <= longitudeBands; longNumber++) {
+                    var phi = longNumber * 2 * Math.PI / longitudeBands;
+                    var sinPhi = Math.sin(phi);
+                    var cosPhi = Math.cos(phi);
+
+                    var x = cosPhi * sinTheta;
+                    var y = cosTheta;
+                    var z = sinPhi * sinTheta;
+                    var u = 1 - (longNumber / longitudeBands);
+                    var v = 1 - (latNumber / latitudeBands);
+
+                    normalData.push(x);
+                    normalData.push(y);
+                    normalData.push(z);
+                    textureCoordData.push(u);
+                    textureCoordData.push(v);
+                    vertexPositionData.push((radius[0] * x) + center[0]);
+                    vertexPositionData.push((radius[1] * y) + center[1]);
+                    vertexPositionData.push((radius[2] * z) + center[2]);
+
+                    colorData.push(diffuse[0]);
+                    colorData.push(diffuse[1]);
+                    colorData.push(diffuse[2]);
+                    colorData.push(1.0);
+                }
+            }
+
+            for (var latNumber=0; latNumber < latitudeBands; latNumber++) {
+                for (var longNumber=0; longNumber < longitudeBands; longNumber++) {
+                    var first = (latNumber * (longitudeBands + 1)) + longNumber + indexOffset;
+                    var second = first + longitudeBands + 1;
+                    indexData.push(first);
+                    indexData.push(second);
+                    indexData.push(first + 1);
+
+                    indexData.push(second);
+                    indexData.push(second + 1);
+                    indexData.push(first + 1);
+                }
+            }
+            indexOffset = vertexPositionData.length/3;
+        }
+
+        ellipsoidsNormalBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsNormalBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
+        ellipsoidsNormalBuffer.itemSize = 3;
+        ellipsoidsNormalBuffer.numItems = normalData.length / 3;
+
+        // ellipsoidsVertexTextureCoordBuffer = gl.createBuffer();
+        // gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsVertexTextureCoordBuffer);
+        // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordData), gl.STATIC_DRAW);
+        // ellipsoidsVertexTextureCoordBuffer.itemSize = 2;
+        // ellipsoidsVertexTextureCoordBuffer.numItems = textureCoordData.length / 2;
+
+        ellipsoidsVertexPositionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsVertexPositionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositionData), gl.STATIC_DRAW);
+        ellipsoidsVertexPositionBuffer.itemSize = 3;
+        ellipsoidsVertexPositionBuffer.numItems = vertexPositionData.length / 3;
+
+        ellipsoidsVertexColorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsVertexColorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorData), gl.STATIC_DRAW);
+        ellipsoidsVertexColorBuffer.itemSize = 4;
+        ellipsoidsVertexColorBuffer.numItems = vertexPositionData.length / 4;
+
+        ellipsiodsVertexIndexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ellipsiodsVertexIndexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
+        ellipsiodsVertexIndexBuffer.itemSize = 1;
+        ellipsiodsVertexIndexBuffer.numItems = indexData.length;
+
+    }
+}
 
 // read triangles in, load them into webgl buffers
 function loadTriangles() {
@@ -147,7 +256,7 @@ function setupShaders() {
 
         varying vec4 vColor;
         void main(void) {
-            //gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); // all fragments are white
+            // gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); // all fragments are white
             gl_FragColor = vColor;
         }
     `;
@@ -206,10 +315,14 @@ function setupShaders() {
     } // end catch
 } // end setup shaders
 
+function renderStuff() {
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // clear frame/depth buffers
+    renderTriangles();
+    renderEllipsoids();
+}
+
 // render the loaded model
 function renderTriangles() {
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // clear frame/depth buffers
-    
     // vertex buffer: activate and feed into vertex shader
     gl.bindBuffer(gl.ARRAY_BUFFER,vertexBuffer); // activate
     gl.vertexAttribPointer(vertexPositionAttrib, vertexBuffer.itemSize, gl.FLOAT, false, 0, 0); // feed
@@ -223,6 +336,20 @@ function renderTriangles() {
     gl.drawElements(gl.TRIANGLES,triBufferSize,gl.UNSIGNED_SHORT,0); // render
 } // end render triangles
 
+function renderEllipsoids() {
+    // vertex buffer: activate and feed into vertex shader
+    gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsVertexPositionBuffer); // activate
+    gl.vertexAttribPointer(vertexPositionAttrib, ellipsoidsVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0); // feed
+
+    // vertex color buffer: activate and feed into vertex shader
+    gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsVertexColorBuffer); // activate
+    gl.vertexAttribPointer(vertexColorAttrib, ellipsoidsVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0); // feed
+
+    // triangle buffer: activate and render
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ellipsiodsVertexIndexBuffer); // activate
+    gl.drawElements(gl.TRIANGLES,ellipsiodsVertexIndexBuffer.numItems,gl.UNSIGNED_SHORT,0); // render
+}
+
 
 /* MAIN -- HERE is where execution begins after window load */
 
@@ -230,7 +357,8 @@ function main() {
   
   setupWebGL(); // set up the webGL environment
   loadTriangles(); // load in the triangles from tri file
+  loadEllipsoids(); // load in the ellipsoids from ellipsoids file
   setupShaders(); // setup the webGL shaders
-  renderTriangles(); // draw the triangles using webGL
+  renderStuff();
   
 } // end main

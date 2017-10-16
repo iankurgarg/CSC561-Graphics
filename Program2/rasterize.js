@@ -4,8 +4,8 @@
 const WIN_Z = 0;  // default graphics window z coord in world space
 const WIN_LEFT = 0; const WIN_RIGHT = 1;  // default left and right x coords in world space
 const WIN_BOTTOM = 0; const WIN_TOP = 1;  // default top and bottom y coords in world space
-const INPUT_TRIANGLES_URL = "https://ncsucgclass.github.io/prog2/triangles.json"; // triangles file loc
-const INPUT_SPHERES_URL = "https://ncsucgclass.github.io/prog2/ellipsoids.json"; // ellipsoids file loc
+const INPUT_TRIANGLES_URL = "https://iankurgarg.github.io/Graphics/Program2/data/triangles.json"; // triangles file loc
+const INPUT_SPHERES_URL = "https://iankurgarg.github.io/Graphics/Program2/data/ellipsoids.json"; // ellipsoids file loc
 var Eye = new vec4.fromValues(0.5,0.5,-0.5,1.0); // default eye position in world space
 
 /* webgl globals */
@@ -97,6 +97,7 @@ function loadEllipsoids() {
             var latitudeBands = 30;
             var longitudeBands = 30;
             var radius = [inputEllipsoids[i].a, inputEllipsoids[i].b, inputEllipsoids[i].c];
+            // alert(radius);
             // var radius = [2,2,2];
             var center = [inputEllipsoids[i].x, inputEllipsoids[i].y, inputEllipsoids[i].z];
             
@@ -345,7 +346,7 @@ function renderEllipsoids() {
     gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsVertexColorBuffer); // activate
     gl.vertexAttribPointer(vertexColorAttrib, ellipsoidsVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0); // feed
 
-    // triangle buffer: activate and render
+    // ellipsoid buffer: activate and render
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ellipsiodsVertexIndexBuffer); // activate
     gl.drawElements(gl.TRIANGLES,ellipsiodsVertexIndexBuffer.numItems,gl.UNSIGNED_SHORT,0); // render
 }

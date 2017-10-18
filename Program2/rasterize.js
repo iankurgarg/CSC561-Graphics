@@ -132,7 +132,7 @@ function loadEllipsoids() {
 
                     ambientColorData.push(ambient[0], ambient[1], ambient[2], 1.0);
                     diffuseColorData.push(diffuse[0], diffuse[1], diffuse[2], 1.0);
-                    specularColorData.push(specular[0], specular[1], specular[2], 1.0);
+                    specularColorData.push(specular[0], specular[1], specular[2], inputEllipsoids[i].n);
                 }
             }
 
@@ -295,7 +295,7 @@ function setupShaders() {
             vec3 eyeDirection = normalize(vec3(0.5, 0.5, -0.5)-vPosition.xyz);
             vec3 reflectionDirection = reflect(-lightDirection, normal);
 
-            float specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), 5.0);
+            float specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), vSpecularColor.a);
             //vSpecularColor.a using this as a hack to store n value related to specular color
 
             float directionalLightWeighting = max(dot(normal, lightDirection), 0.0);
@@ -304,7 +304,7 @@ function setupShaders() {
 
             gl_FragColor = vec4(vAmbientColor.rgb * lightWeighting, vAmbientColor.a) + 
                         vec4(vDiffuseColor.rgb * lightWeighting * directionalLightWeighting, vDiffuseColor.a) + 
-                        vec4(vSpecularColor.rgb * lightWeighting * specularLightWeighting, vSpecularColor.a);
+                        vec4(vSpecularColor.rgb * lightWeighting * specularLightWeighting, 1.0);
 
         }
     `;
@@ -360,24 +360,19 @@ function setupShaders() {
                 throw "error during shader program linking: " + gl.getProgramInfoLog(shaderProgram);
             } else { // no shader program link errors
                 gl.useProgram(shaderProgram); // activate shader program (frag and vert)
-                vertexPositionAttrib = // get pointer to vertex shader input
-                    gl.getAttribLocation(shaderProgram, "vertexPosition");
+                vertexPositionAttrib = gl.getAttribLocation(shaderProgram, "vertexPosition");
                 gl.enableVertexAttribArray(vertexPositionAttrib); // input to shader from array
 
-                vertexNormalAttrib = // get pointer to vertex shader input
-                    gl.getAttribLocation(shaderProgram, "vertexNormal");
+                vertexNormalAttrib = gl.getAttribLocation(shaderProgram, "vertexNormal");
                 gl.enableVertexAttribArray(vertexNormalAttrib); // input to shader from array
 
-                vertexDiffuseColorAttrib = // get pointer to vertex shader input
-                    gl.getAttribLocation(shaderProgram, "aVertexDiffuseColor");
+                vertexDiffuseColorAttrib = gl.getAttribLocation(shaderProgram, "aVertexDiffuseColor");
                 gl.enableVertexAttribArray(vertexDiffuseColorAttrib); // input to shader from array
 
-                vertexAmbientColorAttrib = // get pointer to vertex shader input
-                    gl.getAttribLocation(shaderProgram, "aVertexAmbientColor");
+                vertexAmbientColorAttrib = gl.getAttribLocation(shaderProgram, "aVertexAmbientColor");
                 gl.enableVertexAttribArray(vertexAmbientColorAttrib); // input to shader from array
 
-                vertexSpecularColorAttrib = // get pointer to vertex shader input
-                    gl.getAttribLocation(shaderProgram, "aVertexSpecularColor");
+                vertexSpecularColorAttrib = gl.getAttribLocation(shaderProgram, "aVertexSpecularColor");
                 gl.enableVertexAttribArray(vertexSpecularColorAttrib); // input to shader from array
             } // end if no shader program link errors
         } // end if no compile errors

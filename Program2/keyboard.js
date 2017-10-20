@@ -46,6 +46,12 @@ function keyboard(e) {
 			highlight_triangle_index += inputTriangles.length - 1;
 			highlight_triangle_index %= inputTriangles.length;
 			loadTriangles(); loadEllipsoids(); break;
+
+		case 110:
+			diffSpecularExp++;
+			// diffSpecularExp %= maxSpecularExp;
+			loadEllipsoids(); break;
+
 	}
 	renderStuff();
 }

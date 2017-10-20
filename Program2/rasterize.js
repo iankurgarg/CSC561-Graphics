@@ -39,6 +39,9 @@ var vertexAmbientColorAttrib; // where to put color for vertex shader
 var vertexDiffuseColorAttrib; // where to put color for vertex shader
 var vertexSpecularColorAttrib; // where to put color for vertex shader
 
+var maxSpecularExp = 20;
+var diffSpecularExp = 0;
+
 var LightPos = [-1, 3, -0.5];
 var LightColor = [1.0, 1.0, 1.0];
 var Eye = [0.5, 0.5, -0.5];
@@ -154,7 +157,7 @@ function loadEllipsoids() {
 
                     ambientColorData.push(ambient[0], ambient[1], ambient[2], 1.0);
                     diffuseColorData.push(diffuse[0], diffuse[1], diffuse[2], 1.0);
-                    specularColorData.push(specular[0], specular[1], specular[2], inputEllipsoids[i].n);
+                    specularColorData.push(specular[0], specular[1], specular[2], (inputEllipsoids[i].n+diffSpecularExp)%maxSpecularExp);
                 }
             }
 
@@ -241,6 +244,7 @@ function loadTriangles() {
                 scale_arg = 1.2;
             }
 
+            // handles scaling of triangle set
             if (whichSet == highlight_triangle_index) {
                 var centroid = vec3.create();
                 for (whichSetTri=0; whichSetTri<inputTriangles[whichSet].vertices.length; whichSetTri++) {

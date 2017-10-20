@@ -21,6 +21,8 @@ var vertexBuffer = []; // this contains vertex coordinates in triples
 var normalBuffer = [];
 var triangleBuffer = []; // this contains indices into vertexBuffer in triples
 var inputTriangles;
+var triangle_centrois = [];
+
 
 //Buffers for ellipsoids
 var inputEllipsoids;
@@ -245,23 +247,13 @@ function loadTriangles() {
             }
 
             // handles scaling of triangle set
-            if (whichSet == highlight_triangle_index) {
-                var centroid = vec3.create();
-                for (whichSetTri=0; whichSetTri<inputTriangles[whichSet].vertices.length; whichSetTri++) {
-                    var vtx = inputTriangles[whichSet].vertices[whichSetTri];
-                    vec3.add(centroid, centroid, vtx);
-                }
-                vec3.scale(centroid, centroid, 1/inputTriangles[whichSet].vertices.length);
-
-                for (whichSetTri=0; whichSetTri<inputTriangles[whichSet].vertices.length; whichSetTri++) {
-                    var vtx = inputTriangles[whichSet].vertices[whichSetTri];
-                    vec3.subtract(vtx, vtx, centroid);
-                    vec3.scale(vtx, vtx, 1.2);
-                    vec3.add(vtx, vtx, centroid);
-                    inputTriangles[whichSet].vertices[whichSetTri] = vtx;
-                }
+            var centroid = vec3.create();
+            for (whichSetTri=0; whichSetTri<inputTriangles[whichSet].vertices.length; whichSetTri++) {
+                var vtx = inputTriangles[whichSet].vertices[whichSetTri];
+                vec3.add(centroid, centroid, vtx);
             }
-            
+            vec3.scale(centroid, centroid, 1/inputTriangles[whichSet].vertices.length);
+            triangle_centrois[whichSet] = centroid;
             
             // set up the vertex coord array
             for (whichSetVert=0; whichSetVert<inputTriangles[whichSet].vertices.length; whichSetVert++) {
@@ -457,13 +449,13 @@ function renderStuff() {
     renderEllipsoids();
 }
 
-function setupLights() {
+function setupLights(newmvmatrix) {
     gl.uniform3f(shaderProgram.lightPos, LightPos[0], LightPos[1], LightPos[2]);
     gl.uniform3f(shaderProgram.lightColor, LightColor[0], LightColor[1], LightColor[2]);
     gl.uniform3f(shaderProgram.eyePos, Eye[0], Eye[1], Eye[2]);
 
     gl.uniformMatrix4fv(shaderProgram.pmatrix, false, pmatrix);
-    gl.uniformMatrix4fv(shaderProgram.mvmatrix, false, mvmatrix);
+    gl.uniformMatrix4fv(shaderProgram.mvmatrix, false, newmvmatrix);
     var nmatrix = mat3.create();
     mat3.fromMat4(nmatrix, mvmatrix);
     mat3.invert(nmatrix, nmatrix);
@@ -477,7 +469,7 @@ function renderTriangles() {
 
     mat4.perspective(pmatrix, 90*Math.PI/180, gl.viewportWidth / gl.viewportHeight, 0.5, 2.0);
     mat4.lookAt(mvmatrix, Eye, Center, Up);
-    setupLights();
+    // setupLights();
 
     for (var whichSet=0; whichSet<inputTriangles.length; whichSet++) {
         gl.bindBuffer(gl.ARRAY_BUFFER,vertexBuffer[whichSet]); // activate
@@ -495,6 +487,19 @@ function renderTriangles() {
 
         gl.bindBuffer(gl.ARRAY_BUFFER,specularColorBuffer[whichSet]); // activate
         gl.vertexAttribPointer(vertexSpecularColorAttrib, specularColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
+
+        var transform_matrix = mat4.create();
+        if (whichSet == highlight_triangle_index) {
+            var cent = triangle_centrois[whichSet];
+            mat4.translate(transform_matrix, transform_matrix, cent);
+            mat4.scale(transform_matrix, transform_matrix, [1.2, 1.2, 1.2]);
+            var minus_cent = vec3.create();
+            vec3.scale(minus_cent, cent, -1.0)
+            mat4.translate(transform_matrix, transform_matrix, minus_cent);
+        }
+
+        mat4.multiply(transform_matrix, mvmatrix, transform_matrix);
+        setupLights(transform_matrix);
 
         // triangle buffer: activate and render
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffer[whichSet]); // activate
@@ -525,7 +530,7 @@ function renderEllipsoids() {
 
     // ellipsoid buffer: activate and render
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ellipsiodsVertexIndexBuffer); // activate
-    setupLights();
+    setupLights(mvmatrix);
     gl.drawElements(gl.TRIANGLES,ellipsiodsVertexIndexBuffer.numItems,gl.UNSIGNED_SHORT,0); // render
 }
 

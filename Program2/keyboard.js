@@ -25,32 +25,32 @@ function keyboard(e) {
 		case 32:
 			highlight_triangle_index = -1;
 			highlight_ellipsoid_index = -1;
-			loadTriangles(); loadEllipsoids(); break;
+			break;
 		case 38:
 			highlight_triangle_index = -1;
 			highlight_ellipsoid_index++;
 			highlight_ellipsoid_index %= inputEllipsoids.length;
-			loadTriangles(); loadEllipsoids(); break;
+			break;
 		case 40:
 			highlight_triangle_index = -1;
 			highlight_ellipsoid_index += inputEllipsoids.length - 1;
 			highlight_ellipsoid_index %= inputEllipsoids.length;
-			loadTriangles(); loadEllipsoids(); break;
+			break;
 		case 39:
 			highlight_ellipsoid_index = -1;
 			highlight_triangle_index++;
 			highlight_triangle_index %= inputTriangles.length;
-			loadTriangles(); loadEllipsoids(); break;
+			break;
 		case 37:
 			highlight_ellipsoid_index = -1;
 			highlight_triangle_index += inputTriangles.length - 1;
 			highlight_triangle_index %= inputTriangles.length;
-			loadTriangles(); loadEllipsoids(); break;
+			break;
 
 		case 110:
 			diffSpecularExp++;
 			// diffSpecularExp %= maxSpecularExp;
-			loadEllipsoids(); break;
+			break;
 
 	}
 	renderStuff();

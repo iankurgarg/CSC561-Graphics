@@ -26,12 +26,12 @@ var triangle_centrois = [];
 
 //Buffers for ellipsoids
 var inputEllipsoids;
-var ellipsoidsNormalBuffer;
-var ellipsoidsAmbientColorBuffer;
-var ellipsoidsDiffuseColorBuffer;
-var ellipsoidsSpecularColorBuffer;
-var ellipsoidsVertexPositionBuffer;
-var ellipsiodsVertexIndexBuffer;
+var ellipsoidsNormalBuffer = [];
+var ellipsoidsAmbientColorBuffer = [];
+var ellipsoidsDiffuseColorBuffer = [];
+var ellipsoidsSpecularColorBuffer = [];
+var ellipsoidsVertexPositionBuffer = [];
+var ellipsiodsVertexIndexBuffer = [];
 
 var triBufferSize = 0; // the number of indices in the triangle buffer
 
@@ -113,18 +113,19 @@ function loadEllipsoids() {
     inputEllipsoids = getJSONFile(INPUT_SPHERES_URL, "spheres");
     
     if (inputEllipsoids != null) {
-        var indexOffset = 0;
-        var vertexPositionData = [];
-        var normalData = [];
-        var ambientColorData = [];
-        var diffuseColorData = [];
-        var specularColorData = [];
-        var indexData = [];
         for (var i = 0; i < inputEllipsoids.length; i++) {
+            var indexOffset = 0;
+            var vertexPositionData = [];
+            var normalData = [];
+            var ambientColorData = [];
+            var diffuseColorData = [];
+            var specularColorData = [];
+            var indexData = [];
+
             var scale_arg = 1.0;
-            if (i == highlight_ellipsoid_index){
-                scale_arg = 1.20;
-            }
+            // if (i == highlight_ellipsoid_index){
+            //     scale_arg = 1.20;
+            // }
             var ambient = inputEllipsoids[i].ambient;
             var diffuse = inputEllipsoids[i].diffuse;
             var specular = inputEllipsoids[i].specular;
@@ -159,7 +160,7 @@ function loadEllipsoids() {
 
                     ambientColorData.push(ambient[0], ambient[1], ambient[2], 1.0);
                     diffuseColorData.push(diffuse[0], diffuse[1], diffuse[2], 1.0);
-                    specularColorData.push(specular[0], specular[1], specular[2], (inputEllipsoids[i].n+diffSpecularExp)%maxSpecularExp);
+                    specularColorData.push(specular[0], specular[1], specular[2], (inputEllipsoids[i].n));
                 }
             }
 
@@ -171,44 +172,46 @@ function loadEllipsoids() {
                     indexData.push(second, second + 1, first + 1);
                 }
             }
-            indexOffset = vertexPositionData.length/3;
+            // indexOffset = vertexPositionData.length/3;
+
+            ellipsoidsNormalBuffer[i] = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsNormalBuffer[i]);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
+            ellipsoidsNormalBuffer[i].itemSize = 3;
+            ellipsoidsNormalBuffer[i].numItems = normalData.length / 3;
+
+            ellipsoidsVertexPositionBuffer[i] = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsVertexPositionBuffer[i]);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositionData), gl.STATIC_DRAW);
+            ellipsoidsVertexPositionBuffer[i].itemSize = 3;
+            ellipsoidsVertexPositionBuffer[i].numItems = vertexPositionData.length / 3;
+
+            ellipsoidsAmbientColorBuffer[i] = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsAmbientColorBuffer[i]);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ambientColorData), gl.STATIC_DRAW);
+            ellipsoidsAmbientColorBuffer[i].itemSize = 4;
+            ellipsoidsAmbientColorBuffer[i].numItems = vertexPositionData.length / 4;
+
+            ellipsoidsDiffuseColorBuffer[i] = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsDiffuseColorBuffer[i]);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(diffuseColorData), gl.STATIC_DRAW);
+            ellipsoidsDiffuseColorBuffer[i].itemSize = 4;
+            ellipsoidsDiffuseColorBuffer[i].numItems = vertexPositionData.length / 4;
+
+            ellipsoidsSpecularColorBuffer[i] = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsSpecularColorBuffer[i]);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(specularColorData), gl.STATIC_DRAW);
+            ellipsoidsSpecularColorBuffer[i].itemSize = 4;
+            ellipsoidsSpecularColorBuffer[i].numItems = vertexPositionData.length / 4;
+
+            ellipsiodsVertexIndexBuffer[i] = gl.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ellipsiodsVertexIndexBuffer[i]);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
+            ellipsiodsVertexIndexBuffer[i].itemSize = 1;
+            ellipsiodsVertexIndexBuffer[i].numItems = indexData.length;
         }
 
-        ellipsoidsNormalBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsNormalBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normalData), gl.STATIC_DRAW);
-        ellipsoidsNormalBuffer.itemSize = 3;
-        ellipsoidsNormalBuffer.numItems = normalData.length / 3;
 
-        ellipsoidsVertexPositionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsVertexPositionBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositionData), gl.STATIC_DRAW);
-        ellipsoidsVertexPositionBuffer.itemSize = 3;
-        ellipsoidsVertexPositionBuffer.numItems = vertexPositionData.length / 3;
-
-        ellipsoidsAmbientColorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsAmbientColorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ambientColorData), gl.STATIC_DRAW);
-        ellipsoidsAmbientColorBuffer.itemSize = 4;
-        ellipsoidsAmbientColorBuffer.numItems = vertexPositionData.length / 4;
-
-        ellipsoidsDiffuseColorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsDiffuseColorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(diffuseColorData), gl.STATIC_DRAW);
-        ellipsoidsDiffuseColorBuffer.itemSize = 4;
-        ellipsoidsDiffuseColorBuffer.numItems = vertexPositionData.length / 4;
-
-        ellipsoidsSpecularColorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsSpecularColorBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(specularColorData), gl.STATIC_DRAW);
-        ellipsoidsSpecularColorBuffer.itemSize = 4;
-        ellipsoidsSpecularColorBuffer.numItems = vertexPositionData.length / 4;
-
-        ellipsiodsVertexIndexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ellipsiodsVertexIndexBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
-        ellipsiodsVertexIndexBuffer.itemSize = 1;
-        ellipsiodsVertexIndexBuffer.numItems = indexData.length;
 
     }
 }
@@ -512,26 +515,41 @@ function renderTriangles() {
 
 function renderEllipsoids() {
     // vertex buffer: activate and feed into vertex shader
-    gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsVertexPositionBuffer); // activate
-    gl.vertexAttribPointer(vertexPositionAttrib, ellipsoidsVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0); // feed
+    for (var whichSet=0; whichSet<inputEllipsoids.length; whichSet++) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsVertexPositionBuffer[whichSet]); // activate
+        gl.vertexAttribPointer(vertexPositionAttrib, ellipsoidsVertexPositionBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsNormalBuffer); // activate
-    gl.vertexAttribPointer(vertexNormalAttrib, ellipsoidsNormalBuffer.itemSize, gl.FLOAT, false, 0, 0); // feed
+        gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsNormalBuffer[whichSet]); // activate
+        gl.vertexAttribPointer(vertexNormalAttrib, ellipsoidsNormalBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
-    // vertex color buffer: activate and feed into vertex shader
-    gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsDiffuseColorBuffer); // activate
-    gl.vertexAttribPointer(vertexDiffuseColorAttrib, ellipsoidsDiffuseColorBuffer.itemSize, gl.FLOAT, false, 0, 0); // feed
+        // vertex color buffer: activate and feed into vertex shader
+        gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsDiffuseColorBuffer[whichSet]); // activate
+        gl.vertexAttribPointer(vertexDiffuseColorAttrib, ellipsoidsDiffuseColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
-    gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsAmbientColorBuffer); // activate
-    gl.vertexAttribPointer(vertexAmbientColorAttrib, ellipsoidsAmbientColorBuffer.itemSize, gl.FLOAT, false, 0, 0); // feed
+        gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsAmbientColorBuffer[whichSet]); // activate
+        gl.vertexAttribPointer(vertexAmbientColorAttrib, ellipsoidsAmbientColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
-    gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsSpecularColorBuffer); // activate
-    gl.vertexAttribPointer(vertexSpecularColorAttrib, ellipsoidsSpecularColorBuffer.itemSize, gl.FLOAT, false, 0, 0); // feed
+        gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsSpecularColorBuffer[whichSet]); // activate
+        gl.vertexAttribPointer(vertexSpecularColorAttrib, ellipsoidsSpecularColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
-    // ellipsoid buffer: activate and render
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ellipsiodsVertexIndexBuffer); // activate
-    setupLights(mvmatrix);
-    gl.drawElements(gl.TRIANGLES,ellipsiodsVertexIndexBuffer.numItems,gl.UNSIGNED_SHORT,0); // render
+        // ellipsoid buffer: activate and render
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ellipsiodsVertexIndexBuffer[whichSet]); // activate
+
+        var transform_matrix = mat4.create();
+        if (whichSet == highlight_ellipsoid_index) {
+            var cent = [inputEllipsoids[whichSet].x, inputEllipsoids[whichSet].y, inputEllipsoids[whichSet].z];
+            mat4.translate(transform_matrix, transform_matrix, cent);
+            mat4.scale(transform_matrix, transform_matrix, [1.2, 1.2, 1.2]);
+            var minus_cent = vec3.create();
+            vec3.scale(minus_cent, cent, -1.0)
+            mat4.translate(transform_matrix, transform_matrix, minus_cent);
+        }
+
+        mat4.multiply(transform_matrix, mvmatrix, transform_matrix);
+        setupLights(transform_matrix);
+
+        gl.drawElements(gl.TRIANGLES,ellipsiodsVertexIndexBuffer[whichSet].numItems,gl.UNSIGNED_SHORT,0); // render
+    }
 }
 
 

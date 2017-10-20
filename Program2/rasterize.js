@@ -20,8 +20,10 @@ var specularColorBuffer; // this contains vertex colors in triples
 var vertexBuffer; // this contains vertex coordinates in triples
 var normalBuffer;
 var triangleBuffer; // this contains indices into vertexBuffer in triples
+var inputTriangles;
 
 //Buffers for ellipsoids
+var inputEllipsoids;
 var ellipsoidsNormalBuffer;
 var ellipsoidsAmbientColorBuffer;
 var ellipsoidsDiffuseColorBuffer;
@@ -43,6 +45,9 @@ var Eye = [0.5, 0.5, -0.5];
 var Up = [0, 1, 0];
 // var At = [0, 0, 1];
 var Center = [0.5, 0.5, 1];
+
+var highlight_ellipsoid_index = -1;
+var highlight_triangle_index = -1;
 
 
 // ASSIGNMENT HELPER FUNCTIONS
@@ -100,7 +105,7 @@ function setupWebGL() {
 } // end setupWebGL
 
 function loadEllipsoids() {
-    var inputEllipsoids = getJSONFile(INPUT_SPHERES_URL, "spheres");
+    inputEllipsoids = getJSONFile(INPUT_SPHERES_URL, "spheres");
     
     if (inputEllipsoids != null) {
         var indexOffset = 0;
@@ -111,6 +116,10 @@ function loadEllipsoids() {
         var specularColorData = [];
         var indexData = [];
         for (var i = 0; i < inputEllipsoids.length; i++) {
+            var scale_arg = 1.0;
+            if (i == highlight_ellipsoid_index){
+                scale_arg = 1.20;
+            }
             var ambient = inputEllipsoids[i].ambient;
             var diffuse = inputEllipsoids[i].diffuse;
             var specular = inputEllipsoids[i].specular;
@@ -139,9 +148,9 @@ function loadEllipsoids() {
                     var v = 1 - (latNumber / latitudeBands);
 
                     normalData.push(x, y, z);
-                    vertexPositionData.push((radius[0] * x) + center[0]);
-                    vertexPositionData.push((radius[1] * y) + center[1]);
-                    vertexPositionData.push((radius[2] * z) + center[2]);
+                    vertexPositionData.push((radius[0] * x * scale_arg) + center[0]);
+                    vertexPositionData.push((radius[1] * y * scale_arg) + center[1]);
+                    vertexPositionData.push((radius[2] * z * scale_arg) + center[2]);
 
                     ambientColorData.push(ambient[0], ambient[1], ambient[2], 1.0);
                     diffuseColorData.push(diffuse[0], diffuse[1], diffuse[2], 1.0);
@@ -201,7 +210,7 @@ function loadEllipsoids() {
 
 // read triangles in, load them into webgl buffers
 function loadTriangles() {
-    var inputTriangles = getJSONFile(INPUT_TRIANGLES_URL,"triangles");
+    inputTriangles = getJSONFile(INPUT_TRIANGLES_URL,"triangles");
 
     if (inputTriangles != String.null) { 
         var whichSetVert; // index of vertex in current triangle set
@@ -217,6 +226,8 @@ function loadTriangles() {
         var specularColorArray = []; // store the colors of the vertices
         var normalData = [];
         var col = vec3.create();
+        triBufferSize = 0;
+
         
         for (var whichSet=0; whichSet<inputTriangles.length; whichSet++) {
             var ambient = inputTriangles[whichSet].material.ambient;
@@ -225,6 +236,10 @@ function loadTriangles() {
             var normals = inputTriangles[whichSet].normals;
 
             vec3.set(indexOffset,vtxBufferSize,vtxBufferSize,vtxBufferSize); // update vertex offset
+            var scale_arg = 1.0;
+            if (highlight_triangle_index == whichSet) {
+                scale_arg = 1.2;
+            }
             
             // set up the vertex coord array
             for (whichSetVert=0; whichSetVert<inputTriangles[whichSet].vertices.length; whichSetVert++) {
@@ -492,6 +507,7 @@ function main() {
   loadEllipsoids(); // load in the ellipsoids from ellipsoids file
   setupShaders(); // setup the webGL shaders
   document.onkeypress = keyboard;
+  document.onkeydown = keyboard;
   renderStuff();
   
 } // end main

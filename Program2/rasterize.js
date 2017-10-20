@@ -41,6 +41,7 @@ var LightPos = [-1, 3, -0.5];
 var LightColor = [1.0, 1.0, 1.0];
 var Eye = [0.5, 0.5, -0.5];
 var Up = [0, 1, 0];
+// var At = [0, 0, 1];
 var Center = [0.5, 0.5, 1];
 
 
@@ -84,6 +85,8 @@ function setupWebGL() {
       if (gl == null) {
         throw "unable to create gl context -- is your browser gl ready?";
       } else {
+        gl.viewportWidth = canvas.width;
+        gl.viewportHeight = canvas.height;
         gl.clearColor(0.0, 0.0, 0.0, 1.0); // use black when we clear the frame buffer
         gl.clearDepth(1.0); // use max when we clear the depth buffer
         gl.enable(gl.DEPTH_TEST); // use hidden surface removal (with zbuffering)
@@ -306,7 +309,7 @@ function setupShaders() {
             
             vec3 normal = normalize(vNormal);
             vec3 eyeDirection = normalize(eyePos - vPosition.xyz);
-            vec3 reflectionDirection = reflect(-lightDirection, normal);
+            vec3 reflectionDirection = normalize(reflect(-lightDirection, normal));
 
             float specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), vSpecularColor.a);
             //vSpecularColor.a using this as a hack to store n value related to specular color
@@ -339,8 +342,7 @@ function setupShaders() {
         uniform mat3 NMatrix;
 
         void main(void) {
-            gl_Position = MVMatrix * vec4(vertexPosition, 1.0); // use the untransformed position
-            vPosition = gl_Position;
+            vPosition = MVMatrix * vec4(vertexPosition, 1.0); // use the untransformed position;
             gl_Position = PMatrix * vPosition;
             vAmbientColor = aVertexAmbientColor;
             vDiffuseColor = aVertexDiffuseColor;
@@ -430,7 +432,7 @@ function setupLights() {
 // render the loaded model
 function renderTriangles() {
 
-    mat4.perspective(pmatrix, 90*Math.PI/180, 1.0, 0.5, 2.0);
+    mat4.perspective(pmatrix, 90*Math.PI/180, gl.viewportWidth / gl.viewportHeight, 0.5, 2.0);
     mat4.lookAt(mvmatrix, Eye, Center, Up);
 
     // vertex buffer: activate and feed into vertex shader
@@ -489,6 +491,7 @@ function main() {
   loadTriangles(); // load in the triangles from tri file
   loadEllipsoids(); // load in the ellipsoids from ellipsoids file
   setupShaders(); // setup the webGL shaders
+  document.onkeypress = keyboard;
   renderStuff();
   
 } // end main

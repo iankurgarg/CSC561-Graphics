@@ -7,12 +7,7 @@ In this assignment, following are implemented:
 - Lighting on 3D Objects
 
 Extra Credit:
-- 
-- 
-- 
-
-
-
+- smooth shading with vertex normals
 
 
 ### Problem Statement

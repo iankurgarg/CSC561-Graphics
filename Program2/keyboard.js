@@ -1,5 +1,6 @@
 function keyboard(e) {
 	switch(e.keyCode) {
+		// Part 4
 		case 97:
 			Eye[0] -= 0.05; Center[0] -= 0.05; break;
 		case 100:
@@ -22,6 +23,7 @@ function keyboard(e) {
 			Center[1] += 0.05; break;
 
 
+		// Part 5
 		case 32:
 			highlight_triangle_index = -1;
 			highlight_ellipsoid_index = -1;
@@ -48,6 +50,7 @@ function keyboard(e) {
 			break;
 
 
+		// Part 6
 		case 98:
 			phong = !phong;
 			break;
@@ -109,7 +112,7 @@ function keyboard(e) {
 			}
 			break;
 
-
+		// Part 7 Translations
 		case 107: //k
 			if (highlight_triangle_index > -1) {
 				triangle_translations[highlight_triangle_index][0] += 0.05
@@ -165,6 +168,7 @@ function keyboard(e) {
 			break;
 
 
+		// Part 7 Rotations
 		case 75: //K
 			if (highlight_triangle_index > -1) {
 				transformTriangles[highlight_triangle_index][1] += 0.05

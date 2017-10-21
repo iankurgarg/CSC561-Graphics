@@ -186,23 +186,23 @@ function loadEllipsoids() {
             ellipsoidsVertexPositionBuffer[i].itemSize = 3;
             ellipsoidsVertexPositionBuffer[i].numItems = vertexPositionData.length / 3;
 
-            ellipsoidsAmbientColorBuffer[i] = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsAmbientColorBuffer[i]);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ambientColorData), gl.STATIC_DRAW);
-            ellipsoidsAmbientColorBuffer[i].itemSize = 4;
-            ellipsoidsAmbientColorBuffer[i].numItems = vertexPositionData.length / 4;
+            // ellipsoidsAmbientColorBuffer[i] = gl.createBuffer();
+            // gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsAmbientColorBuffer[i]);
+            // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ambientColorData), gl.STATIC_DRAW);
+            // ellipsoidsAmbientColorBuffer[i].itemSize = 4;
+            // ellipsoidsAmbientColorBuffer[i].numItems = vertexPositionData.length / 4;
 
-            ellipsoidsDiffuseColorBuffer[i] = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsDiffuseColorBuffer[i]);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(diffuseColorData), gl.STATIC_DRAW);
-            ellipsoidsDiffuseColorBuffer[i].itemSize = 4;
-            ellipsoidsDiffuseColorBuffer[i].numItems = vertexPositionData.length / 4;
+            // ellipsoidsDiffuseColorBuffer[i] = gl.createBuffer();
+            // gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsDiffuseColorBuffer[i]);
+            // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(diffuseColorData), gl.STATIC_DRAW);
+            // ellipsoidsDiffuseColorBuffer[i].itemSize = 4;
+            // ellipsoidsDiffuseColorBuffer[i].numItems = vertexPositionData.length / 4;
 
-            ellipsoidsSpecularColorBuffer[i] = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsSpecularColorBuffer[i]);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(specularColorData), gl.STATIC_DRAW);
-            ellipsoidsSpecularColorBuffer[i].itemSize = 4;
-            ellipsoidsSpecularColorBuffer[i].numItems = vertexPositionData.length / 4;
+            // ellipsoidsSpecularColorBuffer[i] = gl.createBuffer();
+            // gl.bindBuffer(gl.ARRAY_BUFFER, ellipsoidsSpecularColorBuffer[i]);
+            // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(specularColorData), gl.STATIC_DRAW);
+            // ellipsoidsSpecularColorBuffer[i].itemSize = 4;
+            // ellipsoidsSpecularColorBuffer[i].numItems = vertexPositionData.length / 4;
 
             ellipsiodsVertexIndexBuffer[i] = gl.createBuffer();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ellipsiodsVertexIndexBuffer[i]);
@@ -287,21 +287,21 @@ function loadTriangles() {
             gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(normalData),gl.STATIC_DRAW); // coords to that buffer
             normalBuffer[whichSet].itemSize = 3;
 
-            // send the vertex colors to webGL
-            ambientColorBuffer[whichSet] = gl.createBuffer(); // init empty vertex color buffer
-            gl.bindBuffer(gl.ARRAY_BUFFER,ambientColorBuffer[whichSet]); // activate that buffer
-            gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(ambientColorArray),gl.STATIC_DRAW); // coords to that buffer
-            ambientColorBuffer[whichSet].itemSize = 4;
+            // // send the vertex colors to webGL
+            // ambientColorBuffer[whichSet] = gl.createBuffer(); // init empty vertex color buffer
+            // gl.bindBuffer(gl.ARRAY_BUFFER,ambientColorBuffer[whichSet]); // activate that buffer
+            // gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(ambientColorArray),gl.STATIC_DRAW); // coords to that buffer
+            // ambientColorBuffer[whichSet].itemSize = 4;
 
-            diffuseColorBuffer[whichSet] = gl.createBuffer(); // init empty vertex color buffer
-            gl.bindBuffer(gl.ARRAY_BUFFER,diffuseColorBuffer[whichSet]); // activate that buffer
-            gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(diffuseColorArray),gl.STATIC_DRAW); // coords to that buffer
-            diffuseColorBuffer[whichSet].itemSize = 4;
+            // diffuseColorBuffer[whichSet] = gl.createBuffer(); // init empty vertex color buffer
+            // gl.bindBuffer(gl.ARRAY_BUFFER,diffuseColorBuffer[whichSet]); // activate that buffer
+            // gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(diffuseColorArray),gl.STATIC_DRAW); // coords to that buffer
+            // diffuseColorBuffer[whichSet].itemSize = 4;
 
-            specularColorBuffer[whichSet] = gl.createBuffer(); // init empty vertex color buffer
-            gl.bindBuffer(gl.ARRAY_BUFFER,specularColorBuffer[whichSet]); // activate that buffer
-            gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(specularColorArray),gl.STATIC_DRAW); // coords to that buffer
-            specularColorBuffer[whichSet].itemSize = 4;
+            // specularColorBuffer[whichSet] = gl.createBuffer(); // init empty vertex color buffer
+            // gl.bindBuffer(gl.ARRAY_BUFFER,specularColorBuffer[whichSet]); // activate that buffer
+            // gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(specularColorArray),gl.STATIC_DRAW); // coords to that buffer
+            // specularColorBuffer[whichSet].itemSize = 4;
             
             // send the triangle indices to webGL
             triangleBuffer[whichSet] = gl.createBuffer(); // init empty triangle index buffer
@@ -332,15 +332,17 @@ function setupShaders() {
     var fShaderCode = `
         precision mediump float;
 
-        varying vec4 vAmbientColor;
-        varying vec4 vDiffuseColor;
-        varying vec4 vSpecularColor;
+        uniform vec4 vAmbientColor;
+        uniform vec4 vDiffuseColor;
+        uniform vec4 vSpecularColor;
+
         varying vec3 vNormal;
         varying vec4 vPosition;
 
         uniform vec3 lightPos;
         uniform vec3 lightColor;
         uniform vec3 eyePos;
+        uniform float specularExponent;
 
         void main(void) {
             vec3 lightDirection = normalize(lightPos - vPosition.xyz);
@@ -349,7 +351,7 @@ function setupShaders() {
             vec3 eyeDirection = normalize(eyePos - vPosition.xyz);
             vec3 reflectionDirection = normalize(reflect(-lightDirection, normal));
 
-            float specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), vSpecularColor.a);
+            float specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), specularExponent);
             //vSpecularColor.a using this as a hack to store n value related to specular color
 
             float directionalLightWeighting = max(dot(normal, lightDirection), 0.0);
@@ -364,14 +366,14 @@ function setupShaders() {
     // define vertex shader in essl using es6 template strings
     var vShaderCode = `
         attribute vec3 vertexPosition;
-        attribute vec4 aVertexDiffuseColor;
-        attribute vec4 aVertexAmbientColor;
-        attribute vec4 aVertexSpecularColor;
+        // attribute vec4 aVertexDiffuseColor;
+        // attribute vec4 aVertexAmbientColor;
+        // attribute vec4 aVertexSpecularColor;
         attribute vec3 vertexNormal;
 
-        varying vec4 vAmbientColor;
-        varying vec4 vDiffuseColor;
-        varying vec4 vSpecularColor;
+        // varying vec4 vAmbientColor;
+        // varying vec4 vDiffuseColor;
+        // varying vec4 vSpecularColor;
         varying vec3 vNormal;
         varying vec4 vPosition;
 
@@ -382,9 +384,9 @@ function setupShaders() {
         void main(void) {
             vPosition = MVMatrix * vec4(vertexPosition, 1.0); // use the untransformed position;
             gl_Position = PMatrix * vPosition;
-            vAmbientColor = aVertexAmbientColor;
-            vDiffuseColor = aVertexDiffuseColor;
-            vSpecularColor = aVertexSpecularColor;
+            // vAmbientColor = aVertexAmbientColor;
+            // vDiffuseColor = aVertexDiffuseColor;
+            // vSpecularColor = aVertexSpecularColor;
             vNormal = NMatrix * vertexNormal;
         }
     `;
@@ -422,14 +424,14 @@ function setupShaders() {
                 vertexNormalAttrib = gl.getAttribLocation(shaderProgram, "vertexNormal");
                 gl.enableVertexAttribArray(vertexNormalAttrib); // input to shader from array
 
-                vertexDiffuseColorAttrib = gl.getAttribLocation(shaderProgram, "aVertexDiffuseColor");
-                gl.enableVertexAttribArray(vertexDiffuseColorAttrib); // input to shader from array
+                vertexDiffuseColorAttrib = gl.getUniformLocation(shaderProgram, "vDiffuseColor");
+                // gl.enableVertexAttribArray(vertexDiffuseColorAttrib); // input to shader from array
 
-                vertexAmbientColorAttrib = gl.getAttribLocation(shaderProgram, "aVertexAmbientColor");
-                gl.enableVertexAttribArray(vertexAmbientColorAttrib); // input to shader from array
+                vertexAmbientColorAttrib = gl.getUniformLocation(shaderProgram, "vAmbientColor");
+                // gl.enableVertexAttribArray(vertexAmbientColorAttrib); // input to shader from array
 
-                vertexSpecularColorAttrib = gl.getAttribLocation(shaderProgram, "aVertexSpecularColor");
-                gl.enableVertexAttribArray(vertexSpecularColorAttrib); // input to shader from array
+                vertexSpecularColorAttrib = gl.getUniformLocation(shaderProgram, "vSpecularColor");
+                // gl.enableVertexAttribArray(vertexSpecularColorAttrib); // input to shader from array
 
                 shaderProgram.pmatrix = gl.getUniformLocation(shaderProgram, "PMatrix");
                 shaderProgram.mvmatrix = gl.getUniformLocation(shaderProgram, "MVMatrix");
@@ -437,6 +439,7 @@ function setupShaders() {
                 shaderProgram.lightPos = gl.getUniformLocation(shaderProgram, "lightPos");
                 shaderProgram.lightColor = gl.getUniformLocation(shaderProgram, "lightColor");
                 shaderProgram.eyePos = gl.getUniformLocation(shaderProgram, "eyePos");
+                shaderProgram.specular_exponent = gl.getUniformLocation(shaderProgram, "specularExponent");
             } // end if no shader program link errors
         } // end if no compile errors
     } // end try 
@@ -452,7 +455,7 @@ function renderStuff() {
     renderEllipsoids();
 }
 
-function setupLights(newmvmatrix) {
+function setupLights(newmvmatrix, exp) {
     gl.uniform3f(shaderProgram.lightPos, LightPos[0], LightPos[1], LightPos[2]);
     gl.uniform3f(shaderProgram.lightColor, LightColor[0], LightColor[1], LightColor[2]);
     gl.uniform3f(shaderProgram.eyePos, Eye[0], Eye[1], Eye[2]);
@@ -464,6 +467,7 @@ function setupLights(newmvmatrix) {
     mat3.invert(nmatrix, nmatrix);
     mat3.transpose(nmatrix, nmatrix);
     gl.uniformMatrix3fv(shaderProgram.nmatrix, false, nmatrix);
+    gl.uniform1f(shaderProgram.specular_exponent, exp);
 
 }
 
@@ -482,14 +486,14 @@ function renderTriangles() {
         gl.vertexAttribPointer(vertexNormalAttrib, normalBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
         // vertex color buffer: activate and feed into vertex shader
-        gl.bindBuffer(gl.ARRAY_BUFFER,ambientColorBuffer[whichSet]); // activate
-        gl.vertexAttribPointer(vertexAmbientColorAttrib, ambientColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
+        // gl.bindBuffer(gl.ARRAY_BUFFER,ambientColorBuffer[whichSet]); // activate
+        // gl.vertexAttribPointer(vertexAmbientColorAttrib, ambientColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
-        gl.bindBuffer(gl.ARRAY_BUFFER,diffuseColorBuffer[whichSet]); // activate
-        gl.vertexAttribPointer(vertexDiffuseColorAttrib, diffuseColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
+        // gl.bindBuffer(gl.ARRAY_BUFFER,diffuseColorBuffer[whichSet]); // activate
+        // gl.vertexAttribPointer(vertexDiffuseColorAttrib, diffuseColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
-        gl.bindBuffer(gl.ARRAY_BUFFER,specularColorBuffer[whichSet]); // activate
-        gl.vertexAttribPointer(vertexSpecularColorAttrib, specularColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
+        // gl.bindBuffer(gl.ARRAY_BUFFER,specularColorBuffer[whichSet]); // activate
+        // gl.vertexAttribPointer(vertexSpecularColorAttrib, specularColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
         var transform_matrix = mat4.create();
         if (whichSet == highlight_triangle_index) {
@@ -502,7 +506,11 @@ function renderTriangles() {
         }
 
         mat4.multiply(transform_matrix, mvmatrix, transform_matrix);
-        setupLights(transform_matrix);
+        setupLights(transform_matrix, 1.0);
+        var material = inputTriangles[whichSet].material;
+        gl.uniform4f(vertexAmbientColorAttrib, material.ambient[0], material.ambient[1], material.ambient[2], 1.0);
+        gl.uniform4f(vertexDiffuseColorAttrib, material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.0);
+        gl.uniform4f(vertexSpecularColorAttrib, material.specular[0], material.specular[1], material.specular[2], 1.0);
 
         // triangle buffer: activate and render
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffer[whichSet]); // activate
@@ -523,14 +531,14 @@ function renderEllipsoids() {
         gl.vertexAttribPointer(vertexNormalAttrib, ellipsoidsNormalBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
         // vertex color buffer: activate and feed into vertex shader
-        gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsDiffuseColorBuffer[whichSet]); // activate
-        gl.vertexAttribPointer(vertexDiffuseColorAttrib, ellipsoidsDiffuseColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
+        // gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsDiffuseColorBuffer[whichSet]); // activate
+        // gl.vertexAttribPointer(vertexDiffuseColorAttrib, ellipsoidsDiffuseColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
-        gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsAmbientColorBuffer[whichSet]); // activate
-        gl.vertexAttribPointer(vertexAmbientColorAttrib, ellipsoidsAmbientColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
+        // gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsAmbientColorBuffer[whichSet]); // activate
+        // gl.vertexAttribPointer(vertexAmbientColorAttrib, ellipsoidsAmbientColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
-        gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsSpecularColorBuffer[whichSet]); // activate
-        gl.vertexAttribPointer(vertexSpecularColorAttrib, ellipsoidsSpecularColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
+        // gl.bindBuffer(gl.ARRAY_BUFFER,ellipsoidsSpecularColorBuffer[whichSet]); // activate
+        // gl.vertexAttribPointer(vertexSpecularColorAttrib, ellipsoidsSpecularColorBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
         // ellipsoid buffer: activate and render
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ellipsiodsVertexIndexBuffer[whichSet]); // activate
@@ -546,7 +554,12 @@ function renderEllipsoids() {
         }
 
         mat4.multiply(transform_matrix, mvmatrix, transform_matrix);
-        setupLights(transform_matrix);
+        setupLights(transform_matrix, inputEllipsoids[whichSet].n);
+
+        var material = inputEllipsoids[whichSet];
+        gl.uniform4f(vertexAmbientColorAttrib, material.ambient[0], material.ambient[1], material.ambient[2], 1.0);
+        gl.uniform4f(vertexDiffuseColorAttrib, material.diffuse[0], material.diffuse[1], material.diffuse[2], 1.0);
+        gl.uniform4f(vertexSpecularColorAttrib, material.specular[0], material.specular[1], material.specular[2], 1.0);
 
         gl.drawElements(gl.TRIANGLES,ellipsiodsVertexIndexBuffer[whichSet].numItems,gl.UNSIGNED_SHORT,0); // render
     }

@@ -48,7 +48,10 @@ function keyboard(e) {
 			break;
 
 		case 110:
-			diffSpecularExp++;
+			if (highlight_ellipsoid_index > -1) {
+				inputEllipsoids[highlight_ellipsoid_index].n += 1;
+				inputEllipsoids[highlight_ellipsoid_index].n %= 20;
+			}
 			// diffSpecularExp %= maxSpecularExp;
 			break;
 

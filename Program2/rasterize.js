@@ -41,12 +41,16 @@ var LightPos = [-1, 3, -0.5];
 var LightColor = [1.0, 1.0, 1.0];
 var Eye = [0.5, 0.5, -0.5];
 var Up = [0, 1, 0];
-// var At = [0, 0, 1];
 var Center = [0.5, 0.5, 1];
 
 var highlight_ellipsoid_index = -1;
 var highlight_triangle_index = -1;
-var phong = false;
+var phong = true;
+
+var ellipsoid_translations = [];
+var triangle_translations = [];
+var transformTriangles = [];
+var transformEllipsoids = [];
 
 
 // ASSIGNMENT HELPER FUNCTIONS
@@ -117,9 +121,10 @@ function loadEllipsoids() {
             var latitudeBands = 30;
             var longitudeBands = 30;
             var radius = [inputEllipsoids[i].a, inputEllipsoids[i].b, inputEllipsoids[i].c];
-            // alert(radius);
-            // var radius = [2,2,2];
             var center = [inputEllipsoids[i].x, inputEllipsoids[i].y, inputEllipsoids[i].z];
+
+            transformEllipsoids[i] = mat4.create();
+            ellipsoid_translations[i] = vec3.create();
             
             for (var latNumber = 0; latNumber <= latitudeBands; latNumber++) {
                 var theta = latNumber * Math.PI / latitudeBands;
@@ -199,11 +204,10 @@ function loadTriangles() {
 
             var normals = inputTriangles[whichSet].normals;
 
+            transformTriangles[whichSet] = mat4.create();
+            triangle_translations[whichSet] = vec3.create();
+
             vec3.set(indexOffset,vtxBufferSize,vtxBufferSize,vtxBufferSize); // update vertex offset
-            var scale_arg = 1.0;
-            if (highlight_triangle_index == whichSet) {
-                scale_arg = 1.2;
-            }
 
             // handles scaling of triangle set
             var centroid = vec3.create();
@@ -281,7 +285,6 @@ function setupShaders() {
             float directionalLightWeighting = max(dot(normal, lightDirection), 0.0);
 
             float specularLightWeighting = 0.0;
-
             if (aPhong) {
                 vec3 reflectionDirection = normalize(reflect(-lightDirection, normal));
                 specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), specularExponent);
@@ -290,8 +293,6 @@ function setupShaders() {
                 vec3 halfvector = normalize(lightDirection + eyeDirection);
                 specularLightWeighting = pow(max(dot(normal, halfvector), 0.0), specularExponent);
             }
-
-            
 
             gl_FragColor = vec4(vAmbientColor.rgb * lightColor, vAmbientColor.a) + 
                         vec4(vDiffuseColor.rgb * lightColor * directionalLightWeighting, vDiffuseColor.a) + 
@@ -313,7 +314,7 @@ function setupShaders() {
         uniform mat3 NMatrix;
 
         void main(void) {
-            vPosition = MVMatrix * vec4(vertexPosition, 1.0); // use the untransformed position;
+            vPosition = MVMatrix * vec4(vertexPosition, 1.0);
             gl_Position = PMatrix * vPosition;
             vNormal = NMatrix * vertexNormal;
         }
@@ -353,13 +354,8 @@ function setupShaders() {
                 gl.enableVertexAttribArray(vertexNormalAttrib); // input to shader from array
 
                 vertexDiffuseColorAttrib = gl.getUniformLocation(shaderProgram, "vDiffuseColor");
-                // gl.enableVertexAttribArray(vertexDiffuseColorAttrib); // input to shader from array
-
                 vertexAmbientColorAttrib = gl.getUniformLocation(shaderProgram, "vAmbientColor");
-                // gl.enableVertexAttribArray(vertexAmbientColorAttrib); // input to shader from array
-
                 vertexSpecularColorAttrib = gl.getUniformLocation(shaderProgram, "vSpecularColor");
-                // gl.enableVertexAttribArray(vertexSpecularColorAttrib); // input to shader from array
 
                 shaderProgram.pmatrix = gl.getUniformLocation(shaderProgram, "PMatrix");
                 shaderProgram.mvmatrix = gl.getUniformLocation(shaderProgram, "MVMatrix");
@@ -425,8 +421,10 @@ function renderTriangles() {
             vec3.scale(minus_cent, cent, -1.0)
             mat4.translate(transform_matrix, transform_matrix, minus_cent);
         }
+        mat4.translate(transform_matrix, transform_matrix, triangle_translations[whichSet]);
 
         mat4.multiply(transform_matrix, mvmatrix, transform_matrix);
+        mat4.multiply(transform_matrix, transform_matrix, transformTriangles[whichSet]);
         setupLights(transform_matrix, 1.0);
 
         // setup ambient, diffuse and specular light components 
@@ -465,8 +463,10 @@ function renderEllipsoids() {
             vec3.scale(minus_cent, cent, -1.0)
             mat4.translate(transform_matrix, transform_matrix, minus_cent);
         }
+        mat4.translate(transform_matrix, transform_matrix, ellipsoid_translations[whichSet]);
 
         mat4.multiply(transform_matrix, mvmatrix, transform_matrix);
+        mat4.multiply(transform_matrix, transform_matrix, transformEllipsoids[whichSet]);
         setupLights(transform_matrix, inputEllipsoids[whichSet].n);
 
         var material = inputEllipsoids[whichSet];

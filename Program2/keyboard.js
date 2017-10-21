@@ -109,6 +109,49 @@ function keyboard(e) {
 			}
 			break;
 
+
+		case 107: //k
+			if (highlight_triangle_index > -1) {
+				triangle_translations[highlight_triangle_index][0] += 0.05
+			}
+			else if (highlight_ellipsoid_index > -1) {
+				ellipsoid_translations[highlight_ellipsoid_index][0] += 0.05
+			}
+			break;
+
+		case 59: //;
+			if (highlight_triangle_index > -1) {
+				triangle_translations[highlight_triangle_index][0] -= 0.05;
+			}
+			else if (highlight_ellipsoid_index > -1) {
+				ellipsoid_translations[highlight_ellipsoid_index][0] -= 0.05
+			}
+			break;
+
+		case 111: //o
+			if (highlight_triangle_index > -1) {
+				triangle_translations[highlight_triangle_index][1] += 0.05;
+			}
+			else if (highlight_ellipsoid_index > -1) {
+				ellipsoid_translations[highlight_ellipsoid_index][1] += 0.05
+			}
+			break;
+
+		case 108: //l
+			if (highlight_triangle_index > -1) {
+				triangle_translations[highlight_triangle_index][1] -= 0.05;
+			}
+			else if (highlight_ellipsoid_index > -1) {
+				ellipsoid_translations[highlight_ellipsoid_index][1] -= 0.05
+			}
+			break;
+
+		case 105: //i
+			break;
+
+		case 112: //p
+			break;
+
 	}
 	renderStuff();
 }

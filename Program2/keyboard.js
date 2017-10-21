@@ -147,9 +147,21 @@ function keyboard(e) {
 			break;
 
 		case 105: //i
+			if (highlight_triangle_index > -1) {
+				triangle_translations[highlight_triangle_index][2] += 0.05;
+			}
+			else if (highlight_ellipsoid_index > -1) {
+				ellipsoid_translations[highlight_ellipsoid_index][2] += 0.05
+			}
 			break;
 
 		case 112: //p
+			if (highlight_triangle_index > -1) {
+				triangle_translations[highlight_triangle_index][2] -= 0.05;
+			}
+			else if (highlight_ellipsoid_index > -1) {
+				ellipsoid_translations[highlight_ellipsoid_index][2] -= 0.05
+			}
 			break;
 
 	}

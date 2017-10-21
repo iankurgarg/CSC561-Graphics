@@ -164,6 +164,59 @@ function keyboard(e) {
 			}
 			break;
 
+
+		case 75: //K
+			if (highlight_triangle_index > -1) {
+				transformTriangles[highlight_triangle_index][1] += 0.05
+			}
+			else if (highlight_ellipsoid_index > -1) {
+				transformEllipsoids[highlight_ellipsoid_index][1] += 0.05
+			}
+			break;
+
+		case 58: //:
+			if (highlight_triangle_index > -1) {
+				transformTriangles[highlight_triangle_index][1] -= 0.05
+			}
+			else if (highlight_ellipsoid_index > -1) {
+				transformEllipsoids[highlight_ellipsoid_index][1] -= 0.05
+			}
+			break;
+		case 79: //O
+			if (highlight_triangle_index > -1) {
+				transformTriangles[highlight_triangle_index][0] += 0.05
+			}
+			else if (highlight_ellipsoid_index > -1) {
+				transformEllipsoids[highlight_ellipsoid_index][0] += 0.05
+			}
+			break;
+
+		case 76: //L
+			if (highlight_triangle_index > -1) {
+				transformTriangles[highlight_triangle_index][0] -= 0.05
+			}
+			else if (highlight_ellipsoid_index > -1) {
+				transformEllipsoids[highlight_ellipsoid_index][0] -= 0.05
+			}
+			break;
+		case 73: //I
+			if (highlight_triangle_index > -1) {
+				transformTriangles[highlight_triangle_index][2] += 0.05
+			}
+			else if (highlight_ellipsoid_index > -1) {
+				transformEllipsoids[highlight_ellipsoid_index][2] += 0.05
+			}
+			break;
+
+		case 80: //P
+			if (highlight_triangle_index > -1) {
+				transformTriangles[highlight_triangle_index][2] -= 0.05
+			}
+			else if (highlight_ellipsoid_index > -1) {
+				transformEllipsoids[highlight_ellipsoid_index][2] -= 0.05
+			}
+			break;
+
 	}
 	renderStuff();
 }

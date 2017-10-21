@@ -123,7 +123,7 @@ function loadEllipsoids() {
             var radius = [inputEllipsoids[i].a, inputEllipsoids[i].b, inputEllipsoids[i].c];
             var center = [inputEllipsoids[i].x, inputEllipsoids[i].y, inputEllipsoids[i].z];
 
-            transformEllipsoids[i] = mat4.create();
+            transformEllipsoids[i] = vec3.create();
             ellipsoid_translations[i] = vec3.create();
             
             for (var latNumber = 0; latNumber <= latitudeBands; latNumber++) {
@@ -204,7 +204,7 @@ function loadTriangles() {
 
             var normals = inputTriangles[whichSet].normals;
 
-            transformTriangles[whichSet] = mat4.create();
+            transformTriangles[whichSet] = vec3.create();
             triangle_translations[whichSet] = vec3.create();
 
             vec3.set(indexOffset,vtxBufferSize,vtxBufferSize,vtxBufferSize); // update vertex offset
@@ -413,18 +413,24 @@ function renderTriangles() {
         gl.vertexAttribPointer(vertexNormalAttrib, normalBuffer[whichSet].itemSize, gl.FLOAT, false, 0, 0); // feed
 
         var transform_matrix = mat4.create();
+        var cent = triangle_centrois[whichSet];
+        mat4.translate(transform_matrix, transform_matrix, cent);
+
+        mat4.rotateX(transform_matrix, transform_matrix, transformTriangles[whichSet][0]);
+        mat4.rotateY(transform_matrix, transform_matrix, transformTriangles[whichSet][1]);
+        mat4.rotateZ(transform_matrix, transform_matrix, transformTriangles[whichSet][2]);
+
         if (whichSet == highlight_triangle_index) {
-            var cent = triangle_centrois[whichSet];
-            mat4.translate(transform_matrix, transform_matrix, cent);
             mat4.scale(transform_matrix, transform_matrix, [1.2, 1.2, 1.2]);
-            var minus_cent = vec3.create();
-            vec3.scale(minus_cent, cent, -1.0)
-            mat4.translate(transform_matrix, transform_matrix, minus_cent);
         }
+
+        var minus_cent = vec3.create();
+        vec3.scale(minus_cent, cent, -1.0)
+        mat4.translate(transform_matrix, transform_matrix, minus_cent);
+
         mat4.translate(transform_matrix, transform_matrix, triangle_translations[whichSet]);
 
         mat4.multiply(transform_matrix, mvmatrix, transform_matrix);
-        mat4.multiply(transform_matrix, transform_matrix, transformTriangles[whichSet]);
         setupLights(transform_matrix, 1.0);
 
         // setup ambient, diffuse and specular light components 
@@ -455,18 +461,22 @@ function renderEllipsoids() {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ellipsiodsVertexIndexBuffer[whichSet]); // activate
 
         var transform_matrix = mat4.create();
+        var cent = [inputEllipsoids[whichSet].x, inputEllipsoids[whichSet].y, inputEllipsoids[whichSet].z];
+        mat4.translate(transform_matrix, transform_matrix, cent);
         if (whichSet == highlight_ellipsoid_index) {
-            var cent = [inputEllipsoids[whichSet].x, inputEllipsoids[whichSet].y, inputEllipsoids[whichSet].z];
-            mat4.translate(transform_matrix, transform_matrix, cent);
             mat4.scale(transform_matrix, transform_matrix, [1.2, 1.2, 1.2]);
-            var minus_cent = vec3.create();
-            vec3.scale(minus_cent, cent, -1.0)
-            mat4.translate(transform_matrix, transform_matrix, minus_cent);
         }
+        var minus_cent = vec3.create();
+        vec3.scale(minus_cent, cent, -1.0)
+
+        mat4.rotateX(transform_matrix, transform_matrix, transformEllipsoids[whichSet][0]);
+        mat4.rotateY(transform_matrix, transform_matrix, transformEllipsoids[whichSet][1]);
+        mat4.rotateZ(transform_matrix, transform_matrix, transformEllipsoids[whichSet][2]);
+
+        mat4.translate(transform_matrix, transform_matrix, minus_cent);
         mat4.translate(transform_matrix, transform_matrix, ellipsoid_translations[whichSet]);
 
         mat4.multiply(transform_matrix, mvmatrix, transform_matrix);
-        mat4.multiply(transform_matrix, transform_matrix, transformEllipsoids[whichSet]);
         setupLights(transform_matrix, inputEllipsoids[whichSet].n);
 
         var material = inputEllipsoids[whichSet];

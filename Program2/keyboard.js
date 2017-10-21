@@ -47,12 +47,66 @@ function keyboard(e) {
 			highlight_triangle_index %= inputTriangles.length;
 			break;
 
+
+		case 98:
+			phong = !phong;
+			break;
+
 		case 110:
 			if (highlight_ellipsoid_index > -1) {
 				inputEllipsoids[highlight_ellipsoid_index].n += 1;
 				inputEllipsoids[highlight_ellipsoid_index].n %= 20;
 			}
-			// diffSpecularExp %= maxSpecularExp;
+			break;
+		case 49:
+			if (highlight_ellipsoid_index > -1) {
+				var temp = inputEllipsoids[highlight_ellipsoid_index].ambient;
+				temp[0] += 0.1; temp[0] %= 1.0;
+				temp[1] += 0.1; temp[1] %= 1.0;
+				temp[2] += 0.1; temp[2] %= 1.0;
+				inputEllipsoids[highlight_ellipsoid_index].ambient = temp;
+			}
+			else if (highlight_triangle_index > -1) {
+				var temp = inputTriangles[highlight_triangle_index].material.ambient;
+				temp[0] += 0.1; temp[0] %= 1.0;
+				temp[1] += 0.1; temp[1] %= 1.0;
+				temp[2] += 0.1; temp[2] %= 1.0;
+				inputTriangles[highlight_triangle_index].material.ambient = temp;
+			}
+			break;
+
+		case 50:
+			if (highlight_ellipsoid_index > -1) {
+				var temp = inputEllipsoids[highlight_ellipsoid_index].diffuse;
+				temp[0] += 0.1; temp[0] %= 1.0;
+				temp[1] += 0.1; temp[1] %= 1.0;
+				temp[2] += 0.1; temp[2] %= 1.0;
+				inputEllipsoids[highlight_ellipsoid_index].diffuse = temp;
+			}
+			else if (highlight_triangle_index > -1) {
+				var temp = inputTriangles[highlight_triangle_index].material.diffuse;
+				temp[0] += 0.1; temp[0] %= 1.0;
+				temp[1] += 0.1; temp[1] %= 1.0;
+				temp[2] += 0.1; temp[2] %= 1.0;
+				inputTriangles[highlight_triangle_index].material.diffuse = temp;
+			}
+			break;
+
+		case 51:
+			if (highlight_ellipsoid_index > -1) {
+				var temp = inputEllipsoids[highlight_ellipsoid_index].specular;
+				temp[0] += 0.1; temp[0] %= 1.0;
+				temp[1] += 0.1; temp[1] %= 1.0;
+				temp[2] += 0.1; temp[2] %= 1.0;
+				inputEllipsoids[highlight_ellipsoid_index].specular = temp;
+			}
+			else if (highlight_triangle_index > -1) {
+				var temp = inputTriangles[highlight_triangle_index].material.specular;
+				temp[0] += 0.1; temp[0] %= 1.0;
+				temp[1] += 0.1; temp[1] %= 1.0;
+				temp[2] += 0.1; temp[2] %= 1.0;
+				inputTriangles[highlight_triangle_index].material.specular = temp;
+			}
 			break;
 
 	}

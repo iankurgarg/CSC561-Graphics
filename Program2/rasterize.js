@@ -46,6 +46,7 @@ var Center = [0.5, 0.5, 1];
 
 var highlight_ellipsoid_index = -1;
 var highlight_triangle_index = -1;
+var phong = false;
 
 
 // ASSIGNMENT HELPER FUNCTIONS

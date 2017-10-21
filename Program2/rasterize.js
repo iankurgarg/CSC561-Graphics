@@ -271,18 +271,27 @@ function setupShaders() {
         uniform vec3 lightColor;
         uniform vec3 eyePos;
         uniform float specularExponent;
+        uniform bool aPhong;
 
         void main(void) {
             vec3 lightDirection = normalize(lightPos - vPosition.xyz);
-            
-            vec3 normal = normalize(vNormal);
             vec3 eyeDirection = normalize(eyePos - vPosition.xyz);
-            vec3 reflectionDirection = normalize(reflect(-lightDirection, normal));
-
-            float specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), specularExponent);
-            //vSpecularColor.a using this as a hack to store n value related to specular color
+            vec3 normal = normalize(vNormal);
 
             float directionalLightWeighting = max(dot(normal, lightDirection), 0.0);
+
+            float specularLightWeighting = 0.0;
+
+            if (aPhong) {
+                vec3 reflectionDirection = normalize(reflect(-lightDirection, normal));
+                specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), specularExponent);
+            }
+            else {
+                vec3 halfvector = normalize(lightDirection + eyeDirection);
+                specularLightWeighting = pow(max(dot(normal, halfvector), 0.0), specularExponent);
+            }
+
+            
 
             gl_FragColor = vec4(vAmbientColor.rgb * lightColor, vAmbientColor.a) + 
                         vec4(vDiffuseColor.rgb * lightColor * directionalLightWeighting, vDiffuseColor.a) + 
@@ -359,6 +368,7 @@ function setupShaders() {
                 shaderProgram.lightColor = gl.getUniformLocation(shaderProgram, "lightColor");
                 shaderProgram.eyePos = gl.getUniformLocation(shaderProgram, "eyePos");
                 shaderProgram.specular_exponent = gl.getUniformLocation(shaderProgram, "specularExponent");
+                shaderProgram.phong = gl.getUniformLocation(shaderProgram, "aPhong");
             } // end if no shader program link errors
         } // end if no compile errors
     } // end try 
@@ -387,6 +397,8 @@ function setupLights(newmvmatrix, exp) {
     mat3.transpose(nmatrix, nmatrix);
     gl.uniformMatrix3fv(shaderProgram.nmatrix, false, nmatrix);
     gl.uniform1f(shaderProgram.specular_exponent, exp);
+
+    gl.uniform1f(shaderProgram.phong, phong);
 
 }
 

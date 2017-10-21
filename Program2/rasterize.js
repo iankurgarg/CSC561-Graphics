@@ -4,8 +4,8 @@
 const WIN_Z = 0;  // default graphics window z coord in world space
 const WIN_LEFT = 0; const WIN_RIGHT = 1;  // default left and right x coords in world space
 const WIN_BOTTOM = 0; const WIN_TOP = 1;  // default top and bottom y coords in world space
-const INPUT_TRIANGLES_URL = "https://iankurgarg.github.io/Graphics/Program2/data/triangles.json"; // triangles file loc
-const INPUT_SPHERES_URL = "https://iankurgarg.github.io/Graphics/Program2/data/ellipsoids.json"; // ellipsoids file loc
+const INPUT_TRIANGLES_URL = "https://ncsucgclass.github.io/prog2/triangles.json"; // triangles file loc
+const INPUT_SPHERES_URL = "https://ncsucgclass.github.io/prog2/ellipsoids.json"; // ellipsoids file loc
 var Eye = new vec4.fromValues(0.5,0.5,-0.5,1.0); // default eye position in world space
 
 /* webgl globals */
@@ -33,9 +33,6 @@ var vertexNormalAttrib; // where to put normals for each vertex
 var vertexAmbientColorAttrib; // where to put color for vertex shader
 var vertexDiffuseColorAttrib; // where to put color for vertex shader
 var vertexSpecularColorAttrib; // where to put color for vertex shader
-
-var maxSpecularExp = 20;
-var diffSpecularExp = 0;
 
 var LightPos = [-1, 3, -0.5];
 var LightColor = [1.0, 1.0, 1.0];
@@ -107,6 +104,7 @@ function setupWebGL() {
  
 } // end setupWebGL
 
+
 function loadEllipsoids() {
     inputEllipsoids = getJSONFile(INPUT_SPHERES_URL, "spheres");
     
@@ -117,7 +115,6 @@ function loadEllipsoids() {
             var normalData = [];
             var indexData = [];
 
-            var scale_arg = 1.0;
             var latitudeBands = 30;
             var longitudeBands = 30;
             var radius = [inputEllipsoids[i].a, inputEllipsoids[i].b, inputEllipsoids[i].c];
@@ -139,13 +136,14 @@ function loadEllipsoids() {
                     var x = cosPhi * sinTheta;
                     var y = cosTheta;
                     var z = sinPhi * sinTheta;
-                    var u = 1 - (longNumber / longitudeBands);
-                    var v = 1 - (latNumber / latitudeBands);
+                    
+                    var ex = (radius[0] * x) + center[0];
+                    var ey = (radius[1] * y) + center[1];
+                    var ez = (radius[2] * z) + center[2];
 
-                    normalData.push(x, y, z);
-                    vertexPositionData.push((radius[0] * x * scale_arg) + center[0]);
-                    vertexPositionData.push((radius[1] * y * scale_arg) + center[1]);
-                    vertexPositionData.push((radius[2] * z * scale_arg) + center[2]);
+                    vertexPositionData.push(ex, ey, ez);
+
+                    normalData.push(x/radius[0], y/radius[1], z/radius[2]);
                 }
             }
 
@@ -279,14 +277,14 @@ function setupShaders() {
 
         void main(void) {
             vec3 lightDirection = normalize(lightPos - vPosition.xyz);
-            vec3 eyeDirection = normalize(eyePos - vPosition.xyz);
+            vec3 eyeDirection = normalize( - vPosition.xyz);
             vec3 normal = normalize(vNormal);
 
             float directionalLightWeighting = max(dot(normal, lightDirection), 0.0);
 
             float specularLightWeighting = 0.0;
             if (aPhong) {
-                vec3 reflectionDirection = normalize(reflect(-lightDirection, normal));
+                vec3 reflectionDirection = reflect(-lightDirection, normal);
                 specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), specularExponent);
             }
             else {
@@ -296,7 +294,7 @@ function setupShaders() {
 
             gl_FragColor = vec4(vAmbientColor.rgb * lightColor, vAmbientColor.a) + 
                         vec4(vDiffuseColor.rgb * lightColor * directionalLightWeighting, vDiffuseColor.a) + 
-                        vec4(vSpecularColor.rgb * lightColor * specularLightWeighting, 1.0);
+                        vec4(vSpecularColor.rgb * lightColor * specularLightWeighting, vSpecularColor.a);
 
         }
     `;
@@ -502,7 +500,7 @@ function main() {
   loadEllipsoids(); // load in the ellipsoids from ellipsoids file
   setupShaders(); // setup the webGL shaders
   document.onkeypress = keyboard;
-  document.onkeydown = keyboard;
+  document.onkeydown = keyboard2;
   renderStuff();
   
 } // end main

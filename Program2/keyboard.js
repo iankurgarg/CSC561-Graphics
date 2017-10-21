@@ -1,6 +1,6 @@
 function keyboard(e) {
 	switch(e.keyCode) {
-		// Part 4
+		// Part 4g
 		case 97:
 			Eye[0] -= 0.05; Center[0] -= 0.05; break;
 		case 100:
@@ -21,33 +21,6 @@ function keyboard(e) {
 			Center[1] -= 0.05; break;
 		case  87: 
 			Center[1] += 0.05; break;
-
-
-		// Part 5
-		case 32:
-			highlight_triangle_index = -1;
-			highlight_ellipsoid_index = -1;
-			break;
-		case 38:
-			highlight_triangle_index = -1;
-			highlight_ellipsoid_index++;
-			highlight_ellipsoid_index %= inputEllipsoids.length;
-			break;
-		case 40:
-			highlight_triangle_index = -1;
-			highlight_ellipsoid_index += inputEllipsoids.length - 1;
-			highlight_ellipsoid_index %= inputEllipsoids.length;
-			break;
-		case 39:
-			highlight_ellipsoid_index = -1;
-			highlight_triangle_index++;
-			highlight_triangle_index %= inputTriangles.length;
-			break;
-		case 37:
-			highlight_ellipsoid_index = -1;
-			highlight_triangle_index += inputTriangles.length - 1;
-			highlight_triangle_index %= inputTriangles.length;
-			break;
 
 
 		// Part 6
@@ -221,6 +194,37 @@ function keyboard(e) {
 			}
 			break;
 
+	}
+	renderStuff();
+}
+
+function keyboard2(e){
+	switch(e.keyCode) {
+			// Part 5
+		case 32:
+			highlight_triangle_index = -1;
+			highlight_ellipsoid_index = -1;
+			break;
+		case 38:
+			highlight_triangle_index = -1;
+			highlight_ellipsoid_index++;
+			highlight_ellipsoid_index %= inputEllipsoids.length;
+			break;
+		case 40:
+			highlight_triangle_index = -1;
+			highlight_ellipsoid_index += inputEllipsoids.length - 1;
+			highlight_ellipsoid_index %= inputEllipsoids.length;
+			break;
+		case 39:
+			highlight_ellipsoid_index = -1;
+			highlight_triangle_index++;
+			highlight_triangle_index %= inputTriangles.length;
+			break;
+		case 37:
+			highlight_ellipsoid_index = -1;
+			highlight_triangle_index += inputTriangles.length - 1;
+			highlight_triangle_index %= inputTriangles.length;
+			break;
 	}
 	renderStuff();
 }

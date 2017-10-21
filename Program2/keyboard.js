@@ -201,19 +201,19 @@ function keyboard(e) {
 			break;
 		case 73: //I
 			if (highlight_triangle_index > -1) {
-				transformTriangles[highlight_triangle_index][2] += 0.05
+				transformTriangles[highlight_triangle_index][2] -= 0.05
 			}
 			else if (highlight_ellipsoid_index > -1) {
-				transformEllipsoids[highlight_ellipsoid_index][2] += 0.05
+				transformEllipsoids[highlight_ellipsoid_index][2] -= 0.05
 			}
 			break;
 
 		case 80: //P
 			if (highlight_triangle_index > -1) {
-				transformTriangles[highlight_triangle_index][2] -= 0.05
+				transformTriangles[highlight_triangle_index][2] += 0.05
 			}
 			else if (highlight_ellipsoid_index > -1) {
-				transformEllipsoids[highlight_ellipsoid_index][2] -= 0.05
+				transformEllipsoids[highlight_ellipsoid_index][2] += 0.05
 			}
 			break;
 

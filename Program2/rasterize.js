@@ -416,19 +416,21 @@ function renderTriangles() {
         var cent = triangle_centrois[whichSet];
         mat4.translate(transform_matrix, transform_matrix, cent);
 
-        mat4.rotateX(transform_matrix, transform_matrix, transformTriangles[whichSet][0]);
-        mat4.rotateY(transform_matrix, transform_matrix, transformTriangles[whichSet][1]);
-        mat4.rotateZ(transform_matrix, transform_matrix, transformTriangles[whichSet][2]);
-
         if (whichSet == highlight_triangle_index) {
             mat4.scale(transform_matrix, transform_matrix, [1.2, 1.2, 1.2]);
         }
+
+        mat4.translate(transform_matrix, transform_matrix, triangle_translations[whichSet]);
+
+        mat4.rotateX(transform_matrix, transform_matrix, transformTriangles[whichSet][0]);
+        mat4.rotateY(transform_matrix, transform_matrix, transformTriangles[whichSet][1]);
+        mat4.rotateZ(transform_matrix, transform_matrix, transformTriangles[whichSet][2]);
 
         var minus_cent = vec3.create();
         vec3.scale(minus_cent, cent, -1.0)
         mat4.translate(transform_matrix, transform_matrix, minus_cent);
 
-        mat4.translate(transform_matrix, transform_matrix, triangle_translations[whichSet]);
+        // mat4.translate(transform_matrix, transform_matrix, triangle_translations[whichSet]);
 
         mat4.multiply(transform_matrix, mvmatrix, transform_matrix);
         setupLights(transform_matrix, 1.0);
@@ -466,15 +468,17 @@ function renderEllipsoids() {
         if (whichSet == highlight_ellipsoid_index) {
             mat4.scale(transform_matrix, transform_matrix, [1.2, 1.2, 1.2]);
         }
-        var minus_cent = vec3.create();
-        vec3.scale(minus_cent, cent, -1.0)
+
+        mat4.translate(transform_matrix, transform_matrix, ellipsoid_translations[whichSet]);
 
         mat4.rotateX(transform_matrix, transform_matrix, transformEllipsoids[whichSet][0]);
         mat4.rotateY(transform_matrix, transform_matrix, transformEllipsoids[whichSet][1]);
         mat4.rotateZ(transform_matrix, transform_matrix, transformEllipsoids[whichSet][2]);
 
+        var minus_cent = vec3.create();
+        vec3.scale(minus_cent, cent, -1.0)
+
         mat4.translate(transform_matrix, transform_matrix, minus_cent);
-        mat4.translate(transform_matrix, transform_matrix, ellipsoid_translations[whichSet]);
 
         mat4.multiply(transform_matrix, mvmatrix, transform_matrix);
         setupLights(transform_matrix, inputEllipsoids[whichSet].n);

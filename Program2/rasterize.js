@@ -386,7 +386,7 @@ function setupLights(newmvmatrix, exp) {
     gl.uniformMatrix4fv(shaderProgram.pmatrix, false, pmatrix);
     gl.uniformMatrix4fv(shaderProgram.mvmatrix, false, newmvmatrix);
     var nmatrix = mat3.create();
-    mat3.fromMat4(nmatrix, mvmatrix);
+    mat3.fromMat4(nmatrix, newmvmatrix);
     mat3.invert(nmatrix, nmatrix);
     mat3.transpose(nmatrix, nmatrix);
     gl.uniformMatrix3fv(shaderProgram.nmatrix, false, nmatrix);

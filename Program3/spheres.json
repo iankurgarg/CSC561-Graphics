@@ -1,0 +1,5 @@
+[
+{"x": 0.3, "y": 0.8, "z": 0.5, "r":0.1, "ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.6], "specular": [0.3,0.3,0.3], "n": 1, "alpha": 1, "texture": "earth.png"},
+{"x": 0.7, "y": 0.7, "z": 0.5, "r":0.1, "ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.6], "specular": [0.3,0.3,0.3], "n": 3, "alpha": 0.8, "texture": "sky.jpg"},
+{"x": 0.6, "y": 0.6, "z": 0.5, "r":0.1, "ambient": [0.1,0.1,0.1], "diffuse": [0.6,0.6,0.6], "specular": [0.3,0.3,0.3], "n": 5, "alpha": 0.6, "texture": "glass.gif"}
+]

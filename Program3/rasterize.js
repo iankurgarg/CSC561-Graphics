@@ -294,13 +294,19 @@ function loadModels() {
                 var angleIncr = (Math.PI+Math.PI) / numLongSteps; // angular increment 
                 var latLimitAngle = angleIncr * (Math.floor(numLongSteps/4)-1); // start/end lat angle
                 var latRadius, latY; // radius and Y at current latitude
+                var ellipsoidTextureCoords = [1,0];
                 for (var latAngle=-latLimitAngle; latAngle<=latLimitAngle; latAngle+=angleIncr) {
                     latRadius = Math.cos(latAngle); // radius of current latitude
                     latY = Math.sin(latAngle); // height at current latitude
-                    for (var longAngle=0; longAngle<2*Math.PI; longAngle+=angleIncr) // for each long
+                    for (var longAngle=0; longAngle<2*Math.PI; longAngle+=angleIncr) {// for each long
                         ellipsoidVertices.push(latRadius*Math.sin(longAngle),latY,latRadius*Math.cos(longAngle));
+                        var u = 1 - (longAngle / (2*Math.PI));   //longitutde
+                        var v = (Math.PI/2 + latAngle)/ Math.PI;
+                        ellipsoidTextureCoords.push (u, v);
+                    }
                 } // end for each latitude
                 ellipsoidVertices.push(0,1,0); // add north pole
+                ellipsoidTextureCoords.push (0, 1);
                 ellipsoidVertices = ellipsoidVertices.map(function(val,idx) { // position and scale ellipsoid
                     switch (idx % 3) {
                         case 0: // x
@@ -346,7 +352,7 @@ function loadModels() {
                 ellipsoidTriangles.push(ellipsoidVertices.length/3-2,ellipsoidVertices.length/3-1,
                                         ellipsoidVertices.length/3-numLongSteps-1); // longitude wrap
             } // end if good number longitude steps
-            return({vertices:ellipsoidVertices, normals:ellipsoidNormals, triangles:ellipsoidTriangles});
+            return({vertices:ellipsoidVertices, normals:ellipsoidNormals, textureCoords: ellipsoidTextureCoords, triangles:ellipsoidTriangles});
         } // end try
         
         catch(e) {
@@ -467,6 +473,17 @@ function loadModels() {
                     normalBuffers.push(gl.createBuffer()); // init empty webgl ellipsoid vertex normal buffer
                     gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffers[normalBuffers.length-1]); // activate that buffer
                     gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(ellipsoidModel.normals),gl.STATIC_DRAW); // data in
+
+                    // texture coords buffer stuff
+                    texCoordsBuffers.push(gl.createBuffer()); // create texture buffer for this triangle
+                    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordsBuffers[texCoordsBuffers.length - 1]); //activate texture buffer
+                    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(ellipsoidModel.textureCoords), gl.STATIC_DRAW); // data in
+                    texCoordsBuffers[texCoordsBuffers.length - 1].itemSize = 2;
+                    texCoordsBuffers[texCoordsBuffers.length - 1].numItems = ellipsoidModel.textureCoords.length / 2;
+
+                    // loading texture image
+                    img_name = ellipsoid.texture;
+                    inputEllipsoids[whichEllipsoid].textureObject = initTexture(img_name);
         
                     triSetSizes.push(ellipsoidModel.triangles.length);
     
@@ -636,7 +653,7 @@ function setupShaders() {
 } // end setup shaders
 
 function initTexture(img_name) {
-    var img_path = "https://ncsucgclass.github.io/prog3/" + img_name;
+    var img_path = "https://iankurgarg.github.io/Graphics/Program3/" + img_name;
     var glTexture = gl.createTexture();
     glTexture.image = new Image();
     glTexture.image.onload = function() {
@@ -759,6 +776,14 @@ function renderModels() {
         gl.vertexAttribPointer(vPosAttribLoc,3,gl.FLOAT,false,0,0); // feed vertex buffer to shader
         gl.bindBuffer(gl.ARRAY_BUFFER,normalBuffers[numTriangleSets+whichEllipsoid]); // activate normal buffer
         gl.vertexAttribPointer(vNormAttribLoc,3,gl.FLOAT,false,0,0); // feed normal buffer to shader
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordsBuffers[numTriangleSets + whichEllipsoid]);
+        gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, inputEllipsoids[whichEllipsoid].textureObject);
+        gl.uniform1i(shaderProgram.samplerUniform, 0);
+
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffers[numTriangleSets+whichEllipsoid]); // activate tri buffer
         
         // draw a transformed instance of the ellipsoid

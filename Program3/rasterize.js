@@ -561,6 +561,7 @@ function setupShaders() {
         // texture stuff
         varying vec2 vTextureCoord;
         uniform sampler2D uSampler;
+        uniform float uAlpha;
             
         void main(void) {
         
@@ -582,7 +583,9 @@ function setupShaders() {
             // combine to output color
             vec3 colorOut = ambient + diffuse + specular; // no specular yet
             // gl_FragColor = vec4(colorOut, 1.0); 
-            gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+            // gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+            vec4 textureColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+            gl_FragColor = vec4(textureColor.rgb, textureColor.a * uAlpha);
         }
     `;
     
@@ -621,6 +624,7 @@ function setupShaders() {
                 shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord"); // ptr to texture coord attrib
                 gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
                 shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
+                shaderProgram.alphaUniform = gl.getUniformLocation(shaderProgram, "uAlpha")
                 
                 // locate vertex uniforms
                 mMatrixULoc = gl.getUniformLocation(shaderProgram, "umMatrix"); // ptr to mmat
@@ -652,6 +656,10 @@ function setupShaders() {
     } // end catch
 } // end setup shaders
 
+function isPowerOf2(value) {
+    return (value & (value - 1)) == 0;
+}
+
 function initTexture(img_name) {
     var img_path = "https://iankurgarg.github.io/Graphics/Program3/" + img_name;
     var glTexture = gl.createTexture();
@@ -660,8 +668,18 @@ function initTexture(img_name) {
         gl.bindTexture(gl.TEXTURE_2D, glTexture);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, glTexture.image);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        if (isPowerOf2(glTexture.image.width) && isPowerOf2(glTexture.image.height)) {
+            // Yes, it's a power of 2. Generate mips.
+            gl.generateMipmap(gl.TEXTURE_2D);
+         } else {
+            // No, it's not a power of 2. Turn of mips and set wrapping to clamp to edge
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+         }
+        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.bindTexture(gl.TEXTURE_2D, null);
     };
     glTexture.image.crossOrigin = "Anonymous";
@@ -747,6 +765,7 @@ function renderModels() {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, inputTriangles[whichTriSet].textureObject);
         gl.uniform1i(shaderProgram.samplerUniform, 0);
+        gl.uniform1f(shaderProgram.alphaUniform, inputTriangles[whichTriSet].material.alpha);
 
         // triangle buffer: activate and render
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffers[whichTriSet]); // activate
@@ -783,6 +802,7 @@ function renderModels() {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, inputEllipsoids[whichEllipsoid].textureObject);
         gl.uniform1i(shaderProgram.samplerUniform, 0);
+        gl.uniform1f(shaderProgram.alphaUniform, inputEllipsoids[whichEllipsoid].alpha);
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffers[numTriangleSets+whichEllipsoid]); // activate tri buffer
         

@@ -18,6 +18,7 @@ var inputTriangles = []; // the triangle data as loaded from input files
 var numTriangleSets = 0; // how many triangle sets in input scene
 var inputEllipsoids = []; // the ellipsoid data as loaded from input files
 var numEllipsoids = 0; // how many ellipsoids in the input scene
+var blending = true;
 
 var vertexBuffers = []; // this contains vertex coordinate lists by set, in triples
 var normalBuffers = []; // this contains normal component lists by set, in triples
@@ -220,6 +221,9 @@ function handleKeyDown(event) {
                 rotateModel(lookAt,dirEnum.NEGATIVE);
             else
                 translateModel(vec3.scale(temp,Up,-viewDelta));
+            break;
+        case "KeyB":
+            blending = !blending;
             break;
         case "Backspace": // reset model transforms to default
             for (var whichTriSet=0; whichTriSet<numTriangleSets; whichTriSet++) {
@@ -562,6 +566,7 @@ function setupShaders() {
         varying vec2 vTextureCoord;
         uniform sampler2D uSampler;
         uniform float uAlpha;
+        uniform bool uBlending;
             
         void main(void) {
         
@@ -582,10 +587,14 @@ function setupShaders() {
             
             // combine to output color
             vec3 colorOut = ambient + diffuse + specular; // no specular yet
-            // gl_FragColor = vec4(colorOut, 1.0); 
             // gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
             vec4 textureColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
-            gl_FragColor = vec4(textureColor.rgb, textureColor.a * uAlpha);
+            if (uBlending) {
+                gl_FragColor = vec4(textureColor.rgb * colorOut, textureColor.a * uAlpha);
+            }
+            else {
+                gl_FragColor = vec4(textureColor.rgb, textureColor.a);
+            }
         }
     `;
     
@@ -624,7 +633,8 @@ function setupShaders() {
                 shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord"); // ptr to texture coord attrib
                 gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
                 shaderProgram.samplerUniform = gl.getUniformLocation(shaderProgram, "uSampler");
-                shaderProgram.alphaUniform = gl.getUniformLocation(shaderProgram, "uAlpha")
+                shaderProgram.alphaUniform = gl.getUniformLocation(shaderProgram, "uAlpha");
+                shaderProgram.blendingUniform = gl.getUniformLocation(shaderProgram, "uBlending");
                 
                 // locate vertex uniforms
                 mMatrixULoc = gl.getUniformLocation(shaderProgram, "umMatrix"); // ptr to mmat
@@ -766,6 +776,19 @@ function renderModels() {
         gl.bindTexture(gl.TEXTURE_2D, inputTriangles[whichTriSet].textureObject);
         gl.uniform1i(shaderProgram.samplerUniform, 0);
         gl.uniform1f(shaderProgram.alphaUniform, inputTriangles[whichTriSet].material.alpha);
+        gl.uniform1f(shaderProgram.blendingUniform, blending);
+
+        if(inputTriangles[whichTriSet].material.alpha == 1) {
+            //opaque
+            gl.disable(gl.BLEND);
+            gl.depthMask(true);
+        }
+        else {
+            //transparency
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.enable(gl.BLEND);
+            gl.depthMask(false);
+        }
 
         // triangle buffer: activate and render
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffers[whichTriSet]); // activate
@@ -803,6 +826,18 @@ function renderModels() {
         gl.bindTexture(gl.TEXTURE_2D, inputEllipsoids[whichEllipsoid].textureObject);
         gl.uniform1i(shaderProgram.samplerUniform, 0);
         gl.uniform1f(shaderProgram.alphaUniform, inputEllipsoids[whichEllipsoid].alpha);
+
+        if(inputEllipsoids[whichEllipsoid].alpha == 1) {
+            //opaque
+            gl.disable(gl.BLEND);
+            gl.depthMask(true);
+        }
+        else {
+            //transparency
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.enable(gl.BLEND);   
+            gl.depthMask(false);     
+        }
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,triangleBuffers[numTriangleSets+whichEllipsoid]); // activate tri buffer
         

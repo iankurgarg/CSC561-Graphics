@@ -302,9 +302,9 @@ function loadModels() {
                 for (var latAngle=-latLimitAngle; latAngle<=latLimitAngle; latAngle+=angleIncr) {
                     latRadius = Math.cos(latAngle); // radius of current latitude
                     latY = Math.sin(latAngle); // height at current latitude
-                    for (var longAngle=0; longAngle<2*Math.PI; longAngle+=angleIncr) {// for each long
+                    for (var longAngle=0; longAngle<2*Math.PI+angleIncr; longAngle+=angleIncr) {// for each long
                         ellipsoidVertices.push(latRadius*Math.sin(longAngle),latY,latRadius*Math.cos(longAngle));
-                        var u = 1 - (longAngle / (2*Math.PI));   //longitutde
+                        var u = (longAngle / (2*Math.PI));   //longitutde
                         var v = (Math.PI/2 + latAngle)/ Math.PI;
                         ellipsoidTextureCoords.push (u, v);
                     }
@@ -594,6 +594,7 @@ function setupShaders() {
             }
             else {
                 gl_FragColor = vec4(textureColor.rgb, textureColor.a);
+                // gl_FragColor = vec4(colorOut, 1.0);
             }
         }
     `;
@@ -679,14 +680,13 @@ function initTexture(img_name) {
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, glTexture.image);
         if (isPowerOf2(glTexture.image.width) && isPowerOf2(glTexture.image.height)) {
-            // Yes, it's a power of 2. Generate mips.
             gl.generateMipmap(gl.TEXTURE_2D);
          } else {
             // No, it's not a power of 2. Turn of mips and set wrapping to clamp to edge
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            //gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
          }
         // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);

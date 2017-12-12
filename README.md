@@ -16,6 +16,8 @@ Author: Ankur Garg (agarg12@ncsu.edu)
   - Transforms
   - Lighting on 3D Objects
 
+- [Program 3](./Program3)
+
 
 ## References
 For more details about the course assignments and the projects, please visit the course webiste [here](http://cgclass.csc.ncsu.edu/p/course-index.html)
